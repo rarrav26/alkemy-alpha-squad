@@ -1,24 +1,60 @@
-using WalletApi.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using WalletApi.Interfaces;
+using WalletApi.Models;
 using WalletApi.Repositories;
+using WalletApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Configure OpenAPI & Swagger UI
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
+// Database context
 builder.Services.AddDbContext<WalletContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
+// ASP.NET Core Identity
+builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireLowercase = false;
+    options.User.RequireUniqueEmail = true;
+})
+.AddEntityFrameworkStores<WalletContext>()
+.AddDefaultTokenProviders();
+
+// Dependency Injection for application services & repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAliasGeneratorService, AliasGeneratorService>();
+builder.Services.AddScoped<ICvuGeneratorService, CvuGeneratorService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// CORS configuration for Frontend integration
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173", "https://localhost:5173", "http://localhost:3000", "http://localhost:5016")
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+});
 
 var app = builder.Build();
 
@@ -27,7 +63,6 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
-    // Genera la interfaz de usuario
     app.UseSwaggerUI(options =>
     {
         options.SwaggerEndpoint(
@@ -38,6 +73,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

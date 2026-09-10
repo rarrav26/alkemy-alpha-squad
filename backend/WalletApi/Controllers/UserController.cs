@@ -38,8 +38,8 @@ namespace WalletApi.Controllers
             var user = new User
             {
                 Id = id,
-                Name = request.Nombre,
-                Lastname = request.Lastname,
+                FirstName = request.Nombre,
+                LastName = request.Lastname,
                 DocumentTypeId = request.DocumentTypeId,
                 DocumentNumber = request.DocumentNumber
             };

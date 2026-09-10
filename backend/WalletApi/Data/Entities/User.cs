@@ -1,21 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace WalletApi.Models;
 
-public partial class User
+public class User : IdentityUser<int>
 {
-    public int Id { get; set; }
+    public string FirstName { get; set; } = string.Empty;
 
-    public string Name { get; set; } = null!;
-
-    public string? Lastname { get; set; }
+    public string LastName { get; set; } = string.Empty;
 
     public int DocumentTypeId { get; set; }
 
-    public string DocumentNumber { get; set; } = null!;
+    public string DocumentNumber { get; set; } = string.Empty;
 
-    public string? Email { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public virtual DocumentType DocumentType { get; set; } = null!;
+    public virtual DocumentType? DocumentType { get; set; }
+
+    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 }

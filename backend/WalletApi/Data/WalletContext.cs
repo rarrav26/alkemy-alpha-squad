@@ -1,102 +1,97 @@
-﻿using System;
-using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace WalletApi.Models;
 
-public partial class WalletContext : DbContext
+public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
-    public WalletContext()
-    {
-    }
-
     public WalletContext(DbContextOptions<WalletContext> options)
         : base(options)
     {
     }
 
-    public virtual DbSet<Account> Accounts { get; set; }
-
-    public virtual DbSet<DocumentType> DocumentTypes { get; set; }
-
-    public virtual DbSet<Transaction> Transactions { get; set; }
-
-    public virtual DbSet<User> Users { get; set; }
-
-    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) => optionsBuilder.UseSqlServer("DefaultConnection");
+    public virtual DbSet<Account> Accounts { get; set; } = null!;
+    public virtual DbSet<DocumentType> DocumentTypes { get; set; } = null!;
+    public virtual DbSet<Transaction> Transactions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Account>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Accounts__3213E83F1F6B2C74");
-
-            entity.Property(e => e.Id).HasColumnName("id");
-        });
+        base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<DocumentType>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__document__3213E83FFC80C688");
-
             entity.ToTable("document_types");
-
-            entity.HasIndex(e => e.Code, "UQ__document__357D4CF9B26AC638").IsUnique();
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Code)
-                .HasMaxLength(10)
-                .IsUnicode(false)
-                .HasColumnName("code");
-            entity.Property(e => e.Name)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("name");
-        });
-
-        modelBuilder.Entity<Transaction>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK__Transact__3213E83FD675344F");
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Code).IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Code).HasMaxLength(10).IsUnicode(false).HasColumnName("code");
+            entity.Property(e => e.Name).HasMaxLength(50).IsUnicode(false).HasColumnName("name");
 
-            entity.HasOne(d => d.Account).WithMany(p => p.Transactions)
-                .HasForeignKey(d => d.AccountId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Transactions_Accounts");
+            entity.HasData(
+                new DocumentType { Id = 1, Code = "DNI", Name = "Documento Nacional de Identidad" },
+                new DocumentType { Id = 2, Code = "PAS", Name = "Pasaporte" }
+            );
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3213E83F46C9357F");
+            entity.Property(e => e.FirstName).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.LastName).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.DocumentNumber).HasMaxLength(30).IsUnicode(false).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
-            entity.HasIndex(e => new { e.DocumentTypeId, e.DocumentNumber }, "UQ_TypeOfId_UserId").IsUnique();
+            entity.HasIndex(e => new { e.DocumentTypeId, e.DocumentNumber }, "UQ_User_DocumentType_Number").IsUnique();
 
-            entity.HasIndex(e => e.Email, "UQ__Users__AB6E6164A30EE9A7").IsUnique();
-
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.DocumentNumber)
-                .HasMaxLength(30)
-                .IsUnicode(false)
-                .HasColumnName("document_number");
-            entity.Property(e => e.DocumentTypeId).HasColumnName("document_type_id");
-            entity.Property(e => e.Email)
-                .HasMaxLength(250)
-                .HasColumnName("email");
-            entity.Property(e => e.Lastname)
-                .HasMaxLength(50)
-                .HasColumnName("lastname");
-            entity.Property(e => e.Name)
-                .HasMaxLength(50)
-                .HasColumnName("name");
-
-            entity.HasOne(d => d.DocumentType).WithMany(p => p.Users)
+            entity.HasOne(d => d.DocumentType)
+                .WithMany(p => p.Users)
                 .HasForeignKey(d => d.DocumentTypeId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
+                .OnDelete(DeleteBehavior.Restrict)
                 .HasConstraintName("FK_Users_DocumentTypes");
         });
 
-        OnModelCreatingPartial(modelBuilder);
-    }
+        modelBuilder.Entity<Account>(entity =>
+        {
+            entity.ToTable("Accounts");
+            entity.HasKey(e => e.Id);
 
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
+            entity.Property(e => e.Balance).HasPrecision(18, 2).HasDefaultValue(0m);
+            entity.Property(e => e.Currency).HasMaxLength(10).HasDefaultValue("ARS");
+            entity.Property(e => e.Alias).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Cvu).HasMaxLength(22).IsUnicode(false).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasIndex(e => e.Alias, "UQ_Accounts_Alias").IsUnique();
+            entity.HasIndex(e => e.Cvu, "UQ_Accounts_Cvu").IsUnique();
+
+            entity.HasOne(d => d.User)
+                .WithMany(p => p.Accounts)
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Accounts_Users");
+        });
+
+        modelBuilder.Entity<Transaction>(entity =>
+        {
+            entity.ToTable("Transactions");
+            entity.HasKey(e => e.Id);
+
+            entity.HasOne(d => d.Account)
+                .WithMany(p => p.Transactions)
+                .HasForeignKey(d => d.AccountId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Transactions_Accounts");
+        });
+
+        modelBuilder.Entity<IdentityRole<int>>().HasData(
+            new IdentityRole<int>
+            {
+                Id = 1,
+                Name = "Usuario",
+                NormalizedName = "USUARIO",
+                ConcurrencyStamp = "seeded-role-usuario"
+            }
+        );
+    }
 }
