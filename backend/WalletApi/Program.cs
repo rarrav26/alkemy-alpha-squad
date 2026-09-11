@@ -32,6 +32,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 .AddEntityFrameworkStores<WalletContext>()
 .AddDefaultTokenProviders();
 
+
 // Dependency Injection for application services & repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAliasGeneratorService, AliasGeneratorService>();

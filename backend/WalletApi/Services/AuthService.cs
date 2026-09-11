@@ -30,6 +30,36 @@ public class AuthService : IAuthService
         _cvuGenerator = cvuGenerator;
     }
 
+    public async Task<LoginResponse> LoginAsync(LoginRequest request)
+    {
+        var user = await _userManager.FindByEmailAsync(request.Email.Trim());
+
+        if (user == null)
+        {
+            throw new UnauthorizedAccessException("Credenciales inválidas.");
+        }
+
+        if (!user.IsActive)
+        {
+            throw new UnauthorizedAccessException("Esta cuenta ha sido desactivada. Contacte a soporte.");
+        }
+
+        var passwordIsValid = await _userManager.CheckPasswordAsync(user, request.Password);
+
+        if (!passwordIsValid)
+        {
+            throw new UnauthorizedAccessException("Credenciales inválidas.");
+        }
+
+        // 3. En lugar de generar un token, devolvemos los datos del usuario
+        return new LoginResponse
+        {
+            UserId = user.Id.ToString(),
+            Email = user.Email ?? "",
+            Message = "Login exitoso"
+        };
+    }
+
     public async Task<IReadOnlyList<DocumentTypeDto>> GetDocumentTypesAsync()
     {
         return await _context.DocumentTypes
