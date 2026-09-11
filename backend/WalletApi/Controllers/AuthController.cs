@@ -1,46 +1,67 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WalletApi.Dtos;
-using WalletApi.Interfaces;
+using WalletApi.Services;
 
 namespace WalletApi.Controllers;
 
-[Route("api/[controller]")]
 [ApiController]
-public class AuthController(ITokenService tokenService) : ControllerBase
+[Route("api/[controller]")]
+public class AuthController : ControllerBase
 {
-    [AllowAnonymous]
-    [HttpPost("login")]
-    public ActionResult Login(LoginRequest request)
+    private readonly IAuthService _authService;
+    private readonly ILogger<AuthController> _logger;
+
+    public AuthController(IAuthService authService, ILogger<AuthController> logger)
     {
-        if (request.Password != "wallet123")
-        {
-            return Unauthorized(new { mensaje = "Credenciales inválidas" });
-        }
-
-        var rol = request.Usuario.ToLowerInvariant() switch
-        {
-            "admin" => "Administrador",
-            "usuario" => "Usuario",
-            _ => null
-        };
-
-        if (rol == null)
-        {
-            return Unauthorized(new { mensaje = "Credenciales inválidas" });
-        }
-
-        var usuarioId = rol == "Administrador" ? 1 : 2;
-
-        var token = tokenService.CrearToken(usuarioId, request.Usuario, rol);
-
-        return Ok(new { accessToken = token, rol });
+        _authService = authService;
+        _logger = logger;
     }
 
-    [Authorize]
-    [HttpGet("test")]
-    public ActionResult Test()
+    /// <summary>
+    /// Gets all active document types for registration.
+    /// </summary>
+    [HttpGet("document-types")]
+    [ProducesResponseType(typeof(IReadOnlyList<DocumentTypeDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetDocumentTypes()
     {
-        return Ok(new { mensaje = "Token válido", usuario = User.Identity?.Name });
+        var documentTypes = await _authService.GetDocumentTypesAsync();
+        return Ok(documentTypes);
+    }
+
+    /// <summary>
+    /// Self-registration endpoint for new users. Creates an ARS account with $0 balance,
+    /// a unique 3-word alias, and a 22-digit CVU.
+    /// </summary>
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(RegisterUserResponseDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Register([FromBody] RegisterUserRequestDto request)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        try
+        {
+            var result = await _authService.RegisterAsync(request);
+            return StatusCode(StatusCodes.Status201Created, result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning("Registration conflict: {Message}", ex.Message);
+            return Conflict(new { message = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogWarning("Registration validation error: {Message}", ex.Message);
+            return BadRequest(new { message = ex.Message });
+        }
+        catch (Exception gitex)
+        {
+            _logger.LogError(ex, "Unexpected error during user registration.");
+            return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred during registration. Please try again later." });
+        }
     }
 }
