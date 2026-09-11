@@ -8,5 +8,6 @@ namespace WalletApi.Dtos
         public string Email { get; set; }
         public string Message { get; set; }
         public string Token { get; set; } = string.Empty;
+        public string expiresAt { get; set; } = string.Empty;
     }
 }

@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using WalletApi.Dtos;
 using WalletApi.Models;
 using WalletApi.Data.Entities;
+using WalletApi.Interfaces;
 namespace WalletApi.Services;
 
 public class AuthService : IAuthService
@@ -21,24 +22,24 @@ public class AuthService : IAuthService
     private readonly WalletContext _context;
     private readonly IAliasGeneratorService _aliasGenerator;
     private readonly ICvuGeneratorService _cvuGenerator;
-    private readonly IConfiguration _configuration;
+    private readonly ITokenService _tokenService;
 
     private const string DefaultRole = "Usuario";
 
-        public AuthService(
+    public AuthService(
         UserManager<User> userManager,
         RoleManager<IdentityRole<int>> roleManager,
         WalletContext context,
         IAliasGeneratorService aliasGenerator,
         ICvuGeneratorService cvuGenerator,
-        IConfiguration configuration)
+        ITokenService tokenService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _context = context;
         _aliasGenerator = aliasGenerator;
         _cvuGenerator = cvuGenerator;
-        _configuration = configuration;
+        _tokenService = tokenService;
     }
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -64,39 +65,15 @@ public class AuthService : IAuthService
 
         var roles = await _userManager.GetRolesAsync(user);
 
-        // Generate JWT token
-        var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-        };
-
-        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
-
-        var jwtKey = _configuration["Jwt:Key"] ?? string.Empty;
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var expirationMinutes = 60;
-        int.TryParse(_configuration["Jwt:ExpirationMinutes"], out expirationMinutes);
-
-        var token = new JwtSecurityToken(
-            issuer: _configuration["Jwt:Issuer"],
-            audience: _configuration["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
-            signingCredentials: creds
-        );
-
-        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+        var token = _tokenService.CrearToken(user, roles);
 
         return new LoginResponse
         {
             UserId = user.Id.ToString(),
             Email = user.Email ?? "",
             Message = "Login exitoso",
-            Token = tokenString
+            Token = token,
+            expiresAt = DateTime.UtcNow.AddMinutes(60).ToString("o")
         };
     }
 
