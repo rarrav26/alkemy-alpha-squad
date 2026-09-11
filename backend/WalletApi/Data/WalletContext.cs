@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-
+using WalletApi.Data.Entities;
 namespace WalletApi.Models;
 
 public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>

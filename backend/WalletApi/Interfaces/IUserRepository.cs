@@ -1,5 +1,5 @@
 using WalletApi.Models;
-
+using WalletApi.Data.Entities;
 namespace WalletApi.Interfaces
 {
     public interface IUserRepository

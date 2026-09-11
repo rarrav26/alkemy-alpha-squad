@@ -1,9 +1,17 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WalletApi.Dtos;
 using WalletApi.Models;
-
+using WalletApi.Data.Entities;
 namespace WalletApi.Services;
 
 public class AuthService : IAuthService
@@ -13,21 +21,24 @@ public class AuthService : IAuthService
     private readonly WalletContext _context;
     private readonly IAliasGeneratorService _aliasGenerator;
     private readonly ICvuGeneratorService _cvuGenerator;
+    private readonly IConfiguration _configuration;
 
     private const string DefaultRole = "Usuario";
 
-    public AuthService(
+        public AuthService(
         UserManager<User> userManager,
         RoleManager<IdentityRole<int>> roleManager,
         WalletContext context,
         IAliasGeneratorService aliasGenerator,
-        ICvuGeneratorService cvuGenerator)
+        ICvuGeneratorService cvuGenerator,
+        IConfiguration configuration)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _context = context;
         _aliasGenerator = aliasGenerator;
         _cvuGenerator = cvuGenerator;
+        _configuration = configuration;
     }
 
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
@@ -51,12 +62,41 @@ public class AuthService : IAuthService
             throw new UnauthorizedAccessException("Credenciales inválidas.");
         }
 
-        // 3. En lugar de generar un token, devolvemos los datos del usuario
+        var roles = await _userManager.GetRolesAsync(user);
+
+        // Generate JWT token
+        var claims = new List<Claim>
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+        var jwtKey = _configuration["Jwt:Key"] ?? string.Empty;
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var expirationMinutes = 60;
+        int.TryParse(_configuration["Jwt:ExpirationMinutes"], out expirationMinutes);
+
+        var token = new JwtSecurityToken(
+            issuer: _configuration["Jwt:Issuer"],
+            audience: _configuration["Jwt:Audience"],
+            claims: claims,
+            expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
+            signingCredentials: creds
+        );
+
+        var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
         return new LoginResponse
         {
             UserId = user.Id.ToString(),
             Email = user.Email ?? "",
-            Message = "Login exitoso"
+            Message = "Login exitoso",
+            Token = tokenString
         };
     }
 

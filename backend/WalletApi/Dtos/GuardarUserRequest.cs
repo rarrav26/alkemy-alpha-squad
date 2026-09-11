@@ -6,10 +6,11 @@ namespace WalletApi.Dtos
     {
         [Required(ErrorMessage = "El nombre es obligatorio.")]
         [StringLength(100, ErrorMessage = "El nombre debe tener menos de 100 caracteres.")]
-        public string Nombre { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
 
-        [Range(1888, 2100, ErrorMessage = "El año debe ser entre 1888 y 2100.")]
-        public string Lastname { get; set; } = string.Empty;
+        [Required(ErrorMessage = "El apellido es obligatorio.")]
+        [StringLength(100, ErrorMessage = "El apellido debe tener menos de 100 caracteres.")]
+        public string LastName { get; set; } = string.Empty;
 
         public int DocumentTypeId { get; set; }
         public string DocumentNumber { get; set; } = string.Empty;

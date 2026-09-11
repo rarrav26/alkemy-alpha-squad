@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using WalletApi.Models;
 using WalletApi.Dtos;
-
+using WalletApi.Data.Entities;
 namespace WalletApi.Controllers
 {
     [Route("api/[controller]")]
@@ -38,8 +38,8 @@ namespace WalletApi.Controllers
             var user = new User
             {
                 Id = id,
-                Name = request.Name,
-                Lastname = request.Lastname,
+                FirstName = request.FirstName,
+                LastName = request.LastName,
                 DocumentTypeId = request.DocumentTypeId,
                 DocumentNumber = request.DocumentNumber
             };

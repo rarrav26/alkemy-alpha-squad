@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-
-namespace WalletApi.Models;
+using Microsoft.AspNetCore.Identity;
+namespace WalletApi.Data.Entities;
 
 public partial class DocumentType
 {

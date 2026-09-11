@@ -1,6 +1,6 @@
 using WalletApi.Interfaces;
 using WalletApi.Models;
-
+using WalletApi.Data.Entities;
 namespace WalletApi.Repositories
 {
     public class UserRepository(WalletContext walletContext) : IUserRepository

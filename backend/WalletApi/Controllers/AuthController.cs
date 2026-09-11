@@ -92,7 +92,7 @@ public class AuthController : ControllerBase
             _logger.LogWarning("Registration validation error: {Message}", ex.Message);
             return BadRequest(new { message = ex.Message });
         }
-        catch (Exception gitex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, "Unexpected error during user registration.");
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred during registration. Please try again later." });

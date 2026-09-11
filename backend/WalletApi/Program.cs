@@ -1,10 +1,16 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
+
+using System.Text;
+using WalletApi.Data.Entities;
 using WalletApi.Interfaces;
 using WalletApi.Models;
 using WalletApi.Repositories;
 using WalletApi.Services;
-
+using WalletApi.Security;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,8 +18,14 @@ builder.Services.AddControllers();
 
 // Configure OpenAPI & Swagger UI
 builder.Services.AddOpenApi();
+// Configure OpenAPI & Swagger UI
 builder.Services.AddEndpointsApiExplorer();
 
+// Configuración correcta para el OpenAPI nativo de .NET (.NET 9+)
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+});
 // Database context
 builder.Services.AddDbContext<WalletContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
@@ -56,7 +68,32 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? throw new InvalidOperationException("No se configuró Jwt:Key.");
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+
+            ValidateLifetime = true,
+
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtKey)),
+
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+builder.Services.AddScoped<ITokenService, JwtTokenService>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

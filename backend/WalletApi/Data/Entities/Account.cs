@@ -1,4 +1,5 @@
-namespace WalletApi.Models;
+using Microsoft.AspNetCore.Identity;
+namespace WalletApi.Data.Entities;
 
 public class Account
 {
