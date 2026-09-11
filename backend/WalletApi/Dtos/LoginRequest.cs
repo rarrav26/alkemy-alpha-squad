@@ -1,12 +1,21 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace WalletApi.Dtos;
-
-public class LoginRequest
+namespace WalletApi.Dtos
 {
-    [Required]
-    public string Usuario { get; set; } = string.Empty;
+    public class LoginRequest
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; }
 
-    [Required]
-    public string Password { get; set; } = string.Empty;
+        [Required]
+        public string Password { get; set; }
+    }
+}
+
+public class LoginResponseDto
+{
+    public string UserId { get; set; }
+    public string Email { get; set; }
+    public string Message { get; set; }
 }

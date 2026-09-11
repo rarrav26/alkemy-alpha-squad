@@ -15,6 +15,6 @@ public class User : IdentityUser<int>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public virtual DocumentType? DocumentType { get; set; }
-
+    public bool IsActive { get; set; } = true;
     public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 }

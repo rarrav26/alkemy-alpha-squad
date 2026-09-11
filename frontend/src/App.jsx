@@ -10,6 +10,7 @@ import {
 import { AccountBalanceWallet } from '@mui/icons-material';
 import theme from './theme/theme';
 import RegisterForm from './components/RegisterForm';
+import LoginForm from './components/LoginForm.jsx';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         {/* Main Content */}
         <Container maxWidth="md" sx={{ flexGrow: 1, py: 4 }}>
           <RegisterForm />
+          <LoginForm />
         </Container>
 
         {/* Footer */}

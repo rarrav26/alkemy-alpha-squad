@@ -1,6 +1,7 @@
-namespace WalletApi.Interfaces;
-
-public interface ITokenService
+﻿namespace WalletApi.Interfaces
 {
-    string CrearToken(int usuarioId, string nombreUsuario, string rol);
+    public interface ITokenService
+    {
+        string CrearToken(int usuarioId, string nombreUsuario, string rol);
+    }
 }

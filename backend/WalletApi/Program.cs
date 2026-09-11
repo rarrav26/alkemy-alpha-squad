@@ -7,11 +7,8 @@ using WalletApi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
 builder.Services.AddControllers();
-builder.Services.AddOpenApi(options =>
-{
-    options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
-});
 
 // Configure OpenAPI & Swagger UI
 builder.Services.AddOpenApi();
@@ -34,6 +31,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 })
 .AddEntityFrameworkStores<WalletContext>()
 .AddDefaultTokenProviders();
+
 
 // Dependency Injection for application services & repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
@@ -61,48 +59,17 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<WalletContext>();
-
-    // Si no tenes migraciones, esto crea la base si no existe.
-    db.Database.EnsureCreated();
-
-    // Seed de tipos de documento
-    if (!db.DocumentTypes.Any())
-    {
-        db.DocumentTypes.AddRange(
-            new DocumentType { Code = "DNI", Name = "Documento Nacional de Identidad" },
-            new DocumentType { Code = "PAS", Name = "Pasaporte" }
-        );
-        db.SaveChanges();
-    }
-
-    // Seed de usuario administrador base
-    if (!db.Users.Any(u => u.Email == "admin@wallet.com"))
-    {
-        var tipoDoc = db.DocumentTypes.First();
-
-        db.Users.Add(new User
-        {
-            Name = "Admin",
-            Lastname = "System",
-            DocumentTypeId = tipoDoc.Id,
-            DocumentNumber = "00000000",
-            Email = "admin@wallet.com"
-        });
-
-        db.SaveChanges();
-    }
-}
-
+// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/openapi/v1.json", "WalletApi v1");
+        options.SwaggerEndpoint(
+            "/openapi/v1.json",
+            "WalletApi v1"
+        );
     });
 }
 
@@ -114,4 +81,5 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.Run();
