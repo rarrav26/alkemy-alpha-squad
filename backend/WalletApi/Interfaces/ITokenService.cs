@@ -1,4 +1,4 @@
-using WalletApi.Data.Entities;
+﻿using WalletApi.Data.Entities;
 
 namespace WalletApi.Interfaces
 {
