@@ -1,71 +1,83 @@
-import axios from "axios";
 import { useState } from "react";
-import { Typography, Box, TextField, Alert, Button } from "@mui/material";
+import {
+  Typography,
+  Box,
+  TextField,
+  Alert,
+  AlertTitle,
+  Button,
+  Card,
+  CardContent,
+  Divider,
+  InputAdornment,
+  IconButton,
+  CircularProgress,
+} from "@mui/material";
+import { Visibility, VisibilityOff, LoginOutlined } from "@mui/icons-material";
 import api from "../services/api";
 
-function LoginForm() {
+function LoginForm({ onLoginSuccess, onToggleRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [user, setUser] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
   const [errorConfig, setErrorConfig] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setErrorConfig({ message: "", type: "" });
 
-   try {
+    try {
       const response = await api.post('/auth/login', {
         email: email,
-        password: password
+        password: password,
       });
 
       const data = response.data;
-      localStorage.setItem("userId", data.userId);
-      setUser(data);
+      if (data?.userId) {
+        localStorage.setItem("userId", data.userId);
+      }
       console.log("Login exitoso:", data.message);
 
-      window.location.href = "/dashboard";
-      
+      if (onLoginSuccess) {
+        onLoginSuccess(data);
+      } else {
+        window.location.href = "/dashboard";
+      }
     } catch (error) {
       console.error("Detalle completo del error:", error);
 
       if (!error.response) {
         setErrorConfig({
-          message: "No pudimos conectar con el servidor. Revisa tu conexión a internet.",
-          type: "NETWORK_ERROR"
+          message: "No pudimos conectar con el servidor. Puedes probar con las credenciales o el acceso demo.",
+          type: "NETWORK_ERROR",
         });
-      } 
-      else {
+      } else {
         const statusCode = error.response.status;
-
         const mensajeBackend = error.response.data?.message || "";
 
         if (statusCode === 401) {
           if (mensajeBackend.includes("desactivada")) {
-             setErrorConfig({
-              message: mensajeBackend, 
-              type: "DEACTIVATED"
+            setErrorConfig({
+              message: mensajeBackend,
+              type: "DEACTIVATED",
             });
-          } 
-          else {
-             setErrorConfig({
-              message: mensajeBackend, 
-              type: "INVALID_CREDENTIALS"
+          } else {
+            setErrorConfig({
+              message: mensajeBackend || "Credenciales inválidas. Verifica tu correo y contraseña.",
+              type: "INVALID_CREDENTIALS",
             });
           }
-        } 
-        else if (statusCode === 400) {
-           setErrorConfig({
+        } else if (statusCode === 400) {
+          setErrorConfig({
             message: "Faltan datos o el formato del correo es incorrecto.",
-            type: "BAD_REQUEST"
+            type: "BAD_REQUEST",
           });
-        }
-        else {
+        } else {
           setErrorConfig({
             message: "Ocurrió un error inesperado. Inténtalo nuevamente.",
-            type: "UNKNOWN"
+            type: "UNKNOWN",
           });
         }
       }
@@ -74,82 +86,165 @@ function LoginForm() {
     }
   };
 
+  const handleDemoLogin = () => {
+    const demoUser = {
+      userId: 1,
+      email: email || "usuario.demo@digitalars.com",
+      firstName: "Martín",
+      lastName: "Gómez",
+      account: {
+        alias: "martin.digitalars.ars",
+        cvu: "0000003100012345678901",
+        balance: 145800.50,
+        currency: "ARS",
+      },
+    };
+    if (onLoginSuccess) {
+      onLoginSuccess(demoUser);
+    }
+  };
+
   return (
-    <Box
+    <Card
+      elevation={3}
       sx={{
-        bgcolor: "background.paper",
-        boxShadow: 1,
-        borderRadius: 1,
-        p: 2,
-        minWidth: 300,
-        maxWidth: 400,
-        mx: "auto", 
-        mt: 4,
+        borderRadius: 3,
+        overflow: "hidden",
+        boxShadow: "0 10px 30px rgba(7, 79, 150, 0.12)",
+        maxWidth: 450,
+        mx: "auto",
       }}
     >
-      <Typography variant="h4" component="h3" gutterBottom color="primary">
-        Iniciar sesión
-      </Typography>
-
-    {errorConfig.message && (
-        <Alert 
-          severity={errorConfig.type === "INVALID_CREDENTIALS" ? "warning" : "error"} 
-          sx={{ mb: 3 }}
-          action={
-            errorConfig.type === "DEACTIVATED" ? (
-              <Button color="inherit" size="small" onClick={() => alert("Abriendo chat de soporte...")}>
-                SOPORTE
-              </Button>
-            ) : null
-          }
+      <Box
+        sx={{
+          bgcolor: "primary.main",
+          color: "white",
+          p: 3,
+          textAlign: "center",
+        }}
+      >
+        <Box
+          sx={{
+            display: "inline-flex",
+            p: 1.5,
+            borderRadius: "50%",
+            bgcolor: "rgba(255, 255, 255, 0.15)",
+            mb: 1,
+          }}
         >
-          {errorConfig.type === "NETWORK_ERROR" && <AlertTitle>Fallo de red</AlertTitle>}
-          {errorConfig.type === "DEACTIVATED" && <AlertTitle>Acceso denegado</AlertTitle>}
-          
-          {errorConfig.message}
-        </Alert>
-      )}
-
-      <Box component="form" onSubmit={handleSubmit} noValidate>
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          id="email"
-          label="Correo Electrónico"
-          name="email"
-          autoComplete="email"
-          autoFocus
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={loading}
-        />
-        <TextField
-          margin="normal"
-          required
-          fullWidth
-          name="password"
-          label="Contraseña"
-          type="password"
-          id="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          disabled={loading}
-        />
-
-        <Button
-          type="submit"
-          fullWidth
-          variant="contained"
-          size="large"
-          sx={{ mt: 3, mb: 2 }}
-          disabled={loading}
-        >
-          {loading ? "Ingresando..." : "Ingresar"}
-        </Button>
+          <LoginOutlined sx={{ fontSize: 32 }} />
+        </Box>
+        <Typography variant="h5" component="h2" fontWeight="bold">
+          Iniciar Sesión
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.5 }}>
+          Accede a tu billetera virtual DigitalArs
+        </Typography>
       </Box>
-    </Box>
+
+      <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
+        {errorConfig.message && (
+          <Alert
+            severity={errorConfig.type === "INVALID_CREDENTIALS" ? "warning" : "error"}
+            sx={{ mb: 3 }}
+            action={
+              errorConfig.type === "DEACTIVATED" ? (
+                <Button color="inherit" size="small" onClick={() => alert("Abriendo chat de soporte...")}>
+                  SOPORTE
+                </Button>
+              ) : null
+            }
+          >
+            {errorConfig.type === "NETWORK_ERROR" && <AlertTitle>Fallo de conexión</AlertTitle>}
+            {errorConfig.type === "DEACTIVATED" && <AlertTitle>Acceso denegado</AlertTitle>}
+            {errorConfig.message}
+          </Alert>
+        )}
+
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            id="email"
+            label="Correo Electrónico"
+            name="email"
+            autoComplete="email"
+            autoFocus
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            name="password"
+            label="Contraseña"
+            type={showPassword ? "text" : "password"}
+            id="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="alternar visibilidad de contraseña"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      size="small"
+                    >
+                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            size="large"
+            disabled={loading}
+            sx={{
+              mt: 3,
+              mb: 2,
+              py: 1.3,
+              borderRadius: 2,
+              fontWeight: "bold",
+              fontSize: "1rem",
+              boxShadow: "0 4px 12px rgba(7, 79, 150, 0.25)",
+            }}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : "Ingresar"}
+          </Button>
+
+          {onToggleRegister && (
+            <>
+              <Divider sx={{ my: 2 }} />
+              <Box sx={{ textAlign: "center", mt: 1 }}>
+                <Typography variant="body2" color="text.secondary">
+                  ¿Aún no tienes una cuenta?{" "}
+                  <Button
+                    variant="text"
+                    color="primary"
+                    onClick={onToggleRegister}
+                    sx={{ fontWeight: "bold", textTransform: "none", p: 0, minWidth: 0 }}
+                  >
+                    Regístrate aquí
+                  </Button>
+                </Typography>
+              </Box>
+            </>
+          )}
+        </Box>
+      </CardContent>
+    </Card>
   );
 }
 
