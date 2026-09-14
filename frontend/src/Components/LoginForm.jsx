@@ -15,13 +15,16 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, LoginOutlined } from "@mui/icons-material";
 import api from "../services/api";
+import { useNavigate } from "react-router-dom";
 
-function LoginForm({ onLoginSuccess, onToggleRegister }) {
+
+function LoginForm({ onToggleRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errorConfig, setErrorConfig] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +32,7 @@ function LoginForm({ onLoginSuccess, onToggleRegister }) {
     setErrorConfig({ message: "", type: "" });
 
     try {
-      const response = await api.post('/auth/login', {
+      const response = await api.post("/auth/login", {
         email: email,
         password: password,
       });
@@ -40,17 +43,14 @@ function LoginForm({ onLoginSuccess, onToggleRegister }) {
       }
       console.log("Login exitoso:", data.message);
 
-      if (onLoginSuccess) {
-        onLoginSuccess(data);
-      } else {
-        window.location.href = "/dashboard";
-      }
+      navigate("/dashboard", { replace: true });
     } catch (error) {
       console.error("Detalle completo del error:", error);
 
       if (!error.response) {
         setErrorConfig({
-          message: "No pudimos conectar con el servidor. Puedes probar con las credenciales o el acceso demo.",
+          message:
+            "No pudimos conectar con el servidor. Puedes probar con las credenciales o el acceso demo.",
           type: "NETWORK_ERROR",
         });
       } else {
@@ -65,7 +65,9 @@ function LoginForm({ onLoginSuccess, onToggleRegister }) {
             });
           } else {
             setErrorConfig({
-              message: mensajeBackend || "Credenciales inválidas. Verifica tu correo y contraseña.",
+              message:
+                mensajeBackend ||
+                "Credenciales inválidas. Verifica tu correo y contraseña.",
               type: "INVALID_CREDENTIALS",
             });
           }
@@ -86,23 +88,6 @@ function LoginForm({ onLoginSuccess, onToggleRegister }) {
     }
   };
 
-  const handleDemoLogin = () => {
-    const demoUser = {
-      userId: 1,
-      email: email || "usuario.demo@digitalars.com",
-      firstName: "Martín",
-      lastName: "Gómez",
-      account: {
-        alias: "martin.digitalars.ars",
-        cvu: "0000003100012345678901",
-        balance: 145800.50,
-        currency: "ARS",
-      },
-    };
-    if (onLoginSuccess) {
-      onLoginSuccess(demoUser);
-    }
-  };
 
   return (
     <Card
@@ -145,18 +130,28 @@ function LoginForm({ onLoginSuccess, onToggleRegister }) {
       <CardContent sx={{ p: { xs: 2.5, sm: 3.5 } }}>
         {errorConfig.message && (
           <Alert
-            severity={errorConfig.type === "INVALID_CREDENTIALS" ? "warning" : "error"}
+            severity={
+              errorConfig.type === "INVALID_CREDENTIALS" ? "warning" : "error"
+            }
             sx={{ mb: 3 }}
             action={
               errorConfig.type === "DEACTIVATED" ? (
-                <Button color="inherit" size="small" onClick={() => alert("Abriendo chat de soporte...")}>
+                <Button
+                  color="inherit"
+                  size="small"
+                  onClick={() => alert("Abriendo chat de soporte...")}
+                >
                   SOPORTE
                 </Button>
               ) : null
             }
           >
-            {errorConfig.type === "NETWORK_ERROR" && <AlertTitle>Fallo de conexión</AlertTitle>}
-            {errorConfig.type === "DEACTIVATED" && <AlertTitle>Acceso denegado</AlertTitle>}
+            {errorConfig.type === "NETWORK_ERROR" && (
+              <AlertTitle>Fallo de conexión</AlertTitle>
+            )}
+            {errorConfig.type === "DEACTIVATED" && (
+              <AlertTitle>Acceso denegado</AlertTitle>
+            )}
             {errorConfig.message}
           </Alert>
         )}
@@ -197,7 +192,11 @@ function LoginForm({ onLoginSuccess, onToggleRegister }) {
                       edge="end"
                       size="small"
                     >
-                      {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                      {showPassword ? (
+                        <VisibilityOff fontSize="small" />
+                      ) : (
+                        <Visibility fontSize="small" />
+                      )}
                     </IconButton>
                   </InputAdornment>
                 ),
@@ -221,27 +220,31 @@ function LoginForm({ onLoginSuccess, onToggleRegister }) {
               boxShadow: "0 4px 12px rgba(7, 79, 150, 0.25)",
             }}
           >
-            {loading ? <CircularProgress size={24} color="inherit" /> : "Ingresar"}
+            {loading ? (
+              <CircularProgress size={24} color="inherit" />
+            ) : (
+              "Ingresar"
+            )}
           </Button>
-
-          {onToggleRegister && (
-            <>
-              <Divider sx={{ my: 2 }} />
-              <Box sx={{ textAlign: "center", mt: 1 }}>
-                <Typography variant="body2" color="text.secondary">
-                  ¿Aún no tienes una cuenta?{" "}
-                  <Button
-                    variant="text"
-                    color="primary"
-                    onClick={onToggleRegister}
-                    sx={{ fontWeight: "bold", textTransform: "none", p: 0, minWidth: 0 }}
-                  >
-                    Regístrate aquí
-                  </Button>
-                </Typography>
-              </Box>
-            </>
-          )}
+          <Divider sx={{ my: 2 }} />
+          <Box sx={{ textAlign: "center", mt: 1 }}>
+            <Typography variant="body2" color="text.secondary">
+              ¿Aún no tienes una cuenta?{" "}
+              <Button
+                variant="text"
+                color="primary"
+                onClick={onToggleRegister}
+                sx={{
+                  fontWeight: "bold",
+                  textTransform: "none",
+                  p: 0,
+                  minWidth: 0,
+                }}
+              >
+                Regístrate aquí
+              </Button>
+            </Typography>
+          </Box> 
         </Box>
       </CardContent>
     </Card>
