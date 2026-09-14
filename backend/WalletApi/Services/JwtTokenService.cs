@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using WalletApi.Data.Entities;
 using WalletApi.Interfaces;
 
+
 namespace WalletApi.Services;
 
 public class JwtTokenService(IConfiguration configuration) : ITokenService
@@ -15,9 +16,14 @@ public class JwtTokenService(IConfiguration configuration) : ITokenService
     {
         var claims = new List<Claim>
         {
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            
+            // Guardamos el SecurityStamp actual en el token
+            new Claim("AspNet.Identity.SecurityStamp", user.SecurityStamp ?? string.Empty)
         };
 
         foreach (var rol in roles)
@@ -37,6 +43,7 @@ public class JwtTokenService(IConfiguration configuration) : ITokenService
         var expirationMinutes = _configuration.GetValue<int>("Jwt:ExpirationMinutes");
         if (expirationMinutes <= 0) expirationMinutes = 60;
 
+        
         var token = new JwtSecurityToken(
             issuer: _configuration["Jwt:Issuer"],
             audience: _configuration["Jwt:Audience"],

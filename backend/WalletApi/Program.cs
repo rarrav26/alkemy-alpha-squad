@@ -100,19 +100,43 @@ builder.Services.AddAuthentication(options =>
                 Encoding.UTF8.GetBytes(jwtKey)),
 
             ClockSkew = TimeSpan.Zero,
+            
             RoleClaimType = ClaimTypes.Role
         };
         options.Events = new JwtBearerEvents
         {
+            OnTokenValidated = async context =>
+            {
+                var userManager = context.HttpContext.RequestServices
+                    .GetRequiredService<UserManager<User>>();
+
+                // Extrae el ID del usuario autenticado en la petición
+                var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (string.IsNullOrEmpty(userId))
+                {
+                    context.Fail("Token no contiene un ID de usuario válido.");
+                    return;
+                }
+
+                var user = await userManager.FindByIdAsync(userId);
+                if (user == null || !user.IsActive)
+                {
+                    context.Fail("El usuario no existe o está inactivo.");
+                    return;
+                }
+
+                // Si el SecurityStamp cambió en la BD (ej. cambio de clave o logout forzado), rechaza el token
+                var tokenStamp = context.Principal?.FindFirstValue("AspNet.Identity.SecurityStamp");
+                if (tokenStamp != user.SecurityStamp)
+                {
+                    context.Fail("La sesión ha expirado o ha sido revocada.");
+                    return;
+                }
+            },
             OnAuthenticationFailed = context =>
             {
-                // Pon un punto de interrupción (breakpoint) aquí o lee la consola
                 Console.WriteLine($"Token inválido: {context.Exception.Message}");
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine("Token validado correctamente.");
                 return Task.CompletedTask;
             }
         };

@@ -1,7 +1,8 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WalletApi.Dtos;
 using WalletApi.Services;
-
+using System.Security.Claims;
 namespace WalletApi.Controllers;
 
 [ApiController]
@@ -16,7 +17,6 @@ public class AuthController : ControllerBase
         _authService = authService;
         _logger = logger;
     }
-
     /// <summary>
     /// Gets all active document types for registration.
     /// </summary>
@@ -98,4 +98,18 @@ public class AuthController : ControllerBase
             return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred during registration. Please try again later." });
         }
     }
+        [HttpPost("logout")]
+        [Authorize]//Se puede quitar, es para que solo el usuario registrado pueda desloguearse
+        public async Task<IActionResult> Logout()
+        {
+            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            await _authService.RevokeSessionsAsync(userId);
+
+            return Ok(new { message = "Sesión cerrada. Todos los tokens previos han sido invalidados." });
+        }
 }

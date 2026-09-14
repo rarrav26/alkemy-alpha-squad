@@ -41,7 +41,19 @@ public class AuthService : IAuthService
         _cvuGenerator = cvuGenerator;
         _tokenService = tokenService;
     }
+    //Agregado de mas-------------------------------------------------------------
+    public async Task RevokeSessionsAsync(int userId)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null)
+        {
+            throw new ArgumentException("Usuario no encontrado.");
+        }
 
+        // Aquí sí existe _userManager:
+        await _userManager.UpdateSecurityStampAsync(user);
+    }   
+    //Agregado de mas-------------------------------------------------------------
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {
         var user = await _userManager.FindByEmailAsync(request.Email.Trim());
