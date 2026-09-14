@@ -21,7 +21,7 @@ import { Visibility, VisibilityOff, PersonAddOutlined } from '@mui/icons-materia
 import authService from '../services/authService';
 import RegistrationSuccessModal from './RegistrationSuccessModal';
 
-export default function RegisterForm() {
+export default function RegisterForm({ onToggleLogin }) {
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -424,6 +424,25 @@ export default function RegisterForm() {
                 {loading ? <CircularProgress size={26} color="inherit" /> : 'Registrarme y Crear Cuenta'}
               </Button>
             </Box>
+
+            {onToggleLogin && (
+              <>
+                <Divider sx={{ my: 2.5 }} />
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    ¿Ya tienes una cuenta registrada?{' '}
+                    <Button
+                      variant="text"
+                      color="primary"
+                      onClick={onToggleLogin}
+                      sx={{ fontWeight: 'bold', textTransform: 'none', p: 0, minWidth: 0 }}
+                    >
+                      Inicia sesión aquí
+                    </Button>
+                  </Typography>
+                </Box>
+              </>
+            )}
           </Box>
         </CardContent>
       </Card>
@@ -431,7 +450,10 @@ export default function RegisterForm() {
       {/* Success Modal */}
       <RegistrationSuccessModal
         open={successModalOpen}
-        onClose={() => setSuccessModalOpen(false)}
+        onClose={() => {
+          setSuccessModalOpen(false);
+          if (onToggleLogin) onToggleLogin();
+        }}
         registrationData={registeredData}
       />
     </Box>
