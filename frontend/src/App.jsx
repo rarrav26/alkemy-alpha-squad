@@ -1,6 +1,6 @@
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme/theme";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import AuthComponent from "./Components/Containers/Auth";
 import Dashboard from "./Components/Containers/Dashboard";
 import History from "./Components/Containers/History";
@@ -11,7 +11,7 @@ const router = createBrowserRouter([
     path: "/",
     element: <RootLayout />,
     children: [
-      { path: "", element: <Dashboard /> },
+      { path: "", element: <Navigate to="/auth" replace /> },
       { path: "dashboard", element: <Dashboard /> },
       { path: "history", element: <History /> },
     ],

@@ -77,6 +77,11 @@ public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
             entity.ToTable("Transactions");
             entity.HasKey(e => e.Id);
 
+            entity.Property(e => e.Amount).HasPrecision(18, 2).IsRequired();
+            entity.Property(e => e.Type).HasMaxLength(20).IsRequired();
+            entity.Property(e => e.Description).HasMaxLength(255);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
             entity.HasOne(d => d.Account)
                 .WithMany(p => p.Transactions)
                 .HasForeignKey(d => d.AccountId)

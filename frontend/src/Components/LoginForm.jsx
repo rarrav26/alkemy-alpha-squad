@@ -40,6 +40,7 @@ function LoginForm({ onToggleRegister }) {
       const data = response.data;
       if (data?.userId) {
         localStorage.setItem("userId", data.userId);
+        localStorage.setItem("token", data.token);
       }
       console.log("Login exitoso:", data.message);
 
