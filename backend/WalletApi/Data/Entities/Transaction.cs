@@ -17,5 +17,10 @@ public partial class Transaction
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    public int? RelatedTransactionId { get; set; }
+
     public virtual Account Account { get; set; } = null!;
+
+    public virtual Transaction? RelatedTransaction { get; set; }
 }
+

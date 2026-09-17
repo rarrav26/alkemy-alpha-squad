@@ -87,6 +87,12 @@ public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
                 .HasForeignKey(d => d.AccountId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_Transactions_Accounts");
+
+            entity.HasOne(d => d.RelatedTransaction)
+                .WithMany()
+                .HasForeignKey(d => d.RelatedTransactionId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .HasConstraintName("FK_Transactions_RelatedTransaction");
         });
 
         modelBuilder.Entity<IdentityRole<int>>().HasData(

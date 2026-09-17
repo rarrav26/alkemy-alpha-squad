@@ -6,15 +6,19 @@ import {
   CardContent,
   CircularProgress,
   Alert,
+  Tabs,
+  Tab,
 } from "@mui/material";
-import { AccountBalanceWallet } from "@mui/icons-material";
+import { AccountBalanceWallet, Send, AddCircle } from "@mui/icons-material";
 import DepositForm from "../DepositForm";
+import TransferForm from "../TransferForm";
 import accountService from "../../services/accountService";
 
 function Dashboard() {
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [activeTab, setActiveTab] = useState(0);
 
   const fetchBalance = async () => {
     try {
@@ -36,7 +40,7 @@ function Dashboard() {
     fetchBalance();
   }, []);
 
-  const handleDepositSuccess = (newBalance) => {
+  const handleBalanceUpdate = (newBalance) => {
     setAccount((prev) => (prev ? { ...prev, balance: newBalance } : prev));
   };
 
@@ -119,8 +123,30 @@ function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Deposit Form */}
-          <DepositForm onDepositSuccess={handleDepositSuccess} />
+          {/* Operations Section: Tabs for Transfer / Deposit */}
+          <Box sx={{ width: "100%", maxWidth: 480 }}>
+            <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+              <Tabs
+                value={activeTab}
+                onChange={(e, val) => setActiveTab(val)}
+                variant="fullWidth"
+              >
+                <Tab icon={<Send />} iconPosition="start" label="Transferir" />
+                <Tab icon={<AddCircle />} iconPosition="start" label="Ingresar Dinero" />
+              </Tabs>
+            </Box>
+
+            {activeTab === 0 && (
+              <TransferForm
+                onTransferSuccess={handleBalanceUpdate}
+                availableBalance={account.balance}
+              />
+            )}
+
+            {activeTab === 1 && (
+              <DepositForm onDepositSuccess={handleBalanceUpdate} />
+            )}
+          </Box>
         </Box>
       )}
     </Box>
