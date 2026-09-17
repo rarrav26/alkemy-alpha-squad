@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState,useContext } from "react";
 import {
   Typography,
   Box,
@@ -16,6 +16,7 @@ import {
 import { Visibility, VisibilityOff, LoginOutlined } from "@mui/icons-material";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../Contexts/AuthContext";
 
 function LoginForm({ onToggleRegister }) {
   const [email, setEmail] = useState("");
@@ -23,6 +24,8 @@ function LoginForm({ onToggleRegister }) {
   const [showPassword, setShowPassword] = useState(false);
   const [errorConfig, setErrorConfig] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
+     const { setUserId,setUserToken} =
+        useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -45,8 +48,9 @@ function LoginForm({ onToggleRegister }) {
         localStorage.setItem("token", data.token);
       }
       console.log("Login exitoso:", data.message);
-      console.log(data.token)
       localStorage.setItem("token", data.token);
+      setUserId(data.userId)
+      setUserToken(data.token)
 
       navigate("/dashboard", { replace: true });
     } catch (error) {

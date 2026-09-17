@@ -81,10 +81,10 @@ function DepositForm({ onDepositSuccess }) {
     <Card
       elevation={3}
       sx={{
+        width: { xs: "100%", ms: "80%", md: "60%" },
         borderRadius: 3,
         overflow: "hidden",
         boxShadow: "0 10px 30px rgba(7, 79, 150, 0.12)",
-        maxWidth: 480,
       }}
     >
       <Box

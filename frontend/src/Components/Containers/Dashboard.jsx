@@ -10,6 +10,7 @@ import {
   Stack,
   Chip,
   Divider,
+  Button,
 } from "@mui/material";
 import {
   AccountBalanceWallet,
@@ -18,12 +19,15 @@ import {
 } from "@mui/icons-material";
 import DepositForm from "../DepositForm";
 import accountService from "../../services/accountService";
+import TransactionHistory from "./TransactionHistory";
 
 function Dashboard() {
   const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showBalance, setShowBalance] = useState(true);
+  const [showTranseferCard, setShowTranseferCard] = useState(false);
+
   useEffect(() => {
     const fetchBalance = async () => {
       try {
@@ -68,11 +72,7 @@ function Dashboard() {
   }
 
   return (
-    <Box>
-      <Typography variant="h5" component="h2" fontWeight="bold" sx={{ mb: 3 }}>
-        Dashboard
-      </Typography>
-
+    <Box sx={{ minHeight: "100vh" }}>
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
           {error}
@@ -83,9 +83,12 @@ function Dashboard() {
         <Box
           sx={{
             display: "flex",
-            flexDirection: { xs: "column", md: "row" },
+            flexDirection: "column",
             gap: 3,
-            alignItems: "flex-start",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "100%",
+            mt: 3,
           }}
         >
           {/* Balance Card con botón de ojo y estado activo */}
@@ -94,55 +97,79 @@ function Dashboard() {
             sx={{
               borderRadius: 3,
               overflow: "hidden",
+              justifyContent: "center",
+              alignItems: "center",
               boxShadow: "0 10px 30px rgba(7, 79, 150, 0.12)",
               minWidth: { xs: "100%", md: 320 },
+              width: { xs: "100%", ms: "80%", md: "60%" },
             }}
           >
             <Box
               sx={{
-                bgcolor: "secondary.main",
+                backgroundColor: "#074f96",
                 color: "white",
                 p: 2.5,
-                textAlign: "center",
+                textAlign: "start",
+                display: "flex",
+                justifyContent: "space-between",
               }}
             >
-              <AccountBalanceWallet sx={{ fontSize: 36, mb: 0.5 }} />
-              <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                Saldo disponible
-              </Typography>
-
-              <Stack
-                direction="row"
-                justifyContent="center"
-                alignItems="center"
-                spacing={1}
-                sx={{ mt: 0.5 }}
-              >
-                <Typography variant="h4" fontWeight="bold">
-                  {showBalance
-                    ? `$ ${account.balance.toLocaleString("es-AR", {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}`
-                    : "••••••••"}
+              <Box>
+                <AccountBalanceWallet sx={{ fontSize: 36, mb: 0.5 }} />
+                <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                  Saldo disponible
                 </Typography>
-                <IconButton
-                  onClick={toggleShowBalance}
-                  size="small"
-                  sx={{ color: "white" }}
-                  aria-label="Ocultar o mostrar saldo"
-                >
-                  {showBalance ? (
-                    <VisibilityOff fontSize="small" />
-                  ) : (
-                    <Visibility fontSize="small" />
-                  )}
-                </IconButton>
-              </Stack>
 
-              <Typography variant="caption" sx={{ opacity: 0.8 }}>
-                {account.currency}
-              </Typography>
+                <Stack
+                  direction="row"
+                  justifyContent="center"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ mt: 0.5 }}
+                >
+                  <Typography variant="h4" fontWeight="bold">
+                    {showBalance
+                      ? `$ ${account.balance.toLocaleString("es-AR", {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}`
+                      : "••••••••"}
+                  </Typography>
+                  <IconButton
+                    onClick={toggleShowBalance}
+                    size="small"
+                    sx={{ color: "white" }}
+                    aria-label="Ocultar o mostrar saldo"
+                  >
+                    {showBalance ? (
+                      <VisibilityOff fontSize="small" />
+                    ) : (
+                      <Visibility fontSize="small" />
+                    )}
+                  </IconButton>
+                </Stack>
+
+                <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                  {account.currency}
+                </Typography>
+              </Box>
+              <Box>
+                <Button
+                  onClick={() => setShowTranseferCard(!showTranseferCard)}
+                  sx={{ backgroundColor: "#FFF", color: "#074f96", mr: 1 }}
+                >
+                  Deposito
+                </Button>
+                <Button
+                  onClick={!setShowTranseferCard}
+                  sx={{
+                    backgroundColor: "rgba(233, 241, 255, 1.000)",
+                    color: "#074f96",
+                  }}
+                >
+                  Transeferencia
+                </Button>
+              </Box>
             </Box>
 
             <CardContent sx={{ p: 2 }}>
@@ -163,9 +190,30 @@ function Dashboard() {
               </Typography>
             </CardContent>
           </Card>
+          <Card
+            elevation={3}
+            sx={{
+              borderRadius: 3,
+              overflow: "scroll",
+              justifyContent: "center",
+              alignItems: "center",
+              boxShadow: "0 10px 30px rgba(7, 79, 150, 0.12)",
+              minWidth: { xs: "100%", md: 320 },
+              width: { xs: "100%", ms: "80%", md: "60%" },
+              maxHeight: 400,
+            }}
+          >
+            <TransactionHistory
+              limit={5}
+              title="Últimos Movimientos"
+              showFilters={false}
+            />
+          </Card>
 
           {/* Deposit Form */}
-          <DepositForm onDepositSuccess={handleDepositSuccess} />
+          {showTranseferCard && (
+            <DepositForm onDepositSuccess={handleDepositSuccess} />
+          )}
         </Box>
       )}
     </Box>

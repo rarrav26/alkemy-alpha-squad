@@ -3,8 +3,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import TransactionFiltersBar from "../TransactionFiltersBar";
 
-
-function TransactionHistory() {
+function TransactionHistory({
+  limit = null,
+  showFilters = true,
+  title = "Mis Movimientos",
+}) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -29,7 +32,8 @@ function TransactionHistory() {
 
         if (filters.fechaDesde) params.append("fechaDesde", filters.fechaDesde);
         if (filters.fechaHasta) params.append("fechaHasta", filters.fechaHasta);
-        if (filters.type && filters.type !== "all") params.append("tipo", filters.type);
+        if (filters.type && filters.type !== "all")
+          params.append("tipo", filters.type);
 
         const response = await fetch(
           `http://localhost:5016/api/Transactions?${params.toString()}`,
@@ -47,7 +51,10 @@ function TransactionHistory() {
         }
 
         const data = await response.json();
-        setTransactions(data.transacciones);
+        const txs = limit
+          ? data.transacciones.slice(0, limit)
+          : data.transacciones;
+        setTransactions(txs);
         setTotalPaginas(data.totalPaginas);
       } catch (err) {
         setError(err.message);
@@ -57,8 +64,7 @@ function TransactionHistory() {
     };
 
     fetchTransactions();
-    
-  }, [pagina, filters.fechaDesde, filters.fechaHasta, filters.type]);
+  }, [pagina, filters.fechaDesde, filters.fechaHasta, filters.type, limit]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -69,37 +75,50 @@ function TransactionHistory() {
     setPagina(1);
   };
 
-
-
-
   if (loading) return <p>Cargando transfeerencias...</p>;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: limit ? "auto" : "100vh",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-around",
+        justifyContent: limit ? "flex-start" : "space-around",
         alignItems: "center",
         textAlign: "center",
       }}
     >
       <Typography
         component="h2"
-        variant="h3"
-        sx={{ my: {xs:3, sm:4,md:5}, fontWeight: "bold",fontSize: { xs: '1.5rem',sm:'2.5rem' , md: '3rem' }  }}
+        variant={limit ? "h6" : "h3"}
+        sx={{
+          my: limit ? { xs: 1, sm: 1.5 } : { xs: 3, sm: 4, md: 5 },
+          fontWeight: "bold",
+          fontSize: { xs: "1.5rem", sm: "2.5rem", md: "3rem" },
+        }}
       >
-        Mis Movimientos
+        {title}
       </Typography>
-      <Box>
-        <TransactionFiltersBar
-          handleChange={handleFilterChange}
-          filters={filters}
-          handleFilterChange={handleFilterChange}
-        />
-      </Box>
+      {limit && (
+        <Button
+          component={Link}
+          to="/transactionHistory"
+          size="small"
+          sx={{ textTransform: "none", fontWeight: "bold" }}
+        >
+          Ver todos
+        </Button>
+      )}
+      {showFilters && !limit && (
+        <Box>
+          <TransactionFiltersBar
+            handleChange={handleFilterChange}
+            filters={filters}
+            handleFilterChange={handleFilterChange}
+          />
+        </Box>
+      )}
       {transactions.length === 0 ? (
         <Box
           sx={{
@@ -203,26 +222,27 @@ function TransactionHistory() {
               );
             })}
           </Grid>
-
-          <Box sx={{ display: "flex", gap: 2, mt: 4, alignItems: "center" }}>
-            <Button
-              variant="contained"
-              disabled={pagina === 1}
-              onClick={() => setPagina((prev) => prev - 1)}
-            >
-              Anterior
-            </Button>
-            <Typography>
-              Página {pagina} de {totalPaginas || 1}
-            </Typography>
-            <Button
-              variant="contained"
-              disabled={pagina >= totalPaginas}
-              onClick={() => setPagina((prev) => prev + 1)}
-            >
-              Siguiente
-            </Button>
-          </Box>
+          {!limit && (
+            <Box sx={{ display: "flex", gap: 2, mt: 4, alignItems: "center" }}>
+              <Button
+                variant="contained"
+                disabled={pagina === 1}
+                onClick={() => setPagina((prev) => prev - 1)}
+              >
+                Anterior
+              </Button>
+              <Typography>
+                Página {pagina} de {totalPaginas || 1}
+              </Typography>
+              <Button
+                variant="contained"
+                disabled={pagina >= totalPaginas}
+                onClick={() => setPagina((prev) => prev + 1)}
+              >
+                Siguiente
+              </Button>
+            </Box>
+          )}
         </>
       )}
     </Box>
