@@ -58,6 +58,7 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAliasGeneratorService, AliasGeneratorService>();
 builder.Services.AddScoped<ICvuGeneratorService, CvuGeneratorService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
 
 // CORS configuration for Frontend integration
 builder.Services.AddCors(options =>

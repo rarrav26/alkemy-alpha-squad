@@ -12,8 +12,8 @@ using WalletApi.Models;
 namespace WalletApi.Migrations
 {
     [DbContext(typeof(WalletContext))]
-    [Migration("20260911002713_AgregarIsActiveUsuarios")]
-    partial class AgregarIsActiveUsuarios
+    [Migration("20260917140646_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,7 +167,7 @@ namespace WalletApi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("WalletApi.Models.Account", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.Account", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -220,7 +220,7 @@ namespace WalletApi.Migrations
                     b.ToTable("Accounts", (string)null);
                 });
 
-            modelBuilder.Entity("WalletApi.Models.DocumentType", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.DocumentType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -265,7 +265,7 @@ namespace WalletApi.Migrations
                         });
                 });
 
-            modelBuilder.Entity("WalletApi.Models.Transaction", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.Transaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -276,14 +276,46 @@ namespace WalletApi.Migrations
                     b.Property<int>("AccountId")
                         .HasColumnType("int");
 
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("ReceiverAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SenderAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
 
+                    b.HasIndex("ReceiverAccountId");
+
+                    b.HasIndex("SenderAccountId");
+
                     b.ToTable("Transactions", (string)null);
                 });
 
-            modelBuilder.Entity("WalletApi.Models.User", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -392,7 +424,7 @@ namespace WalletApi.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
                 {
-                    b.HasOne("WalletApi.Models.User", null)
+                    b.HasOne("WalletApi.Data.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -401,7 +433,7 @@ namespace WalletApi.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
                 {
-                    b.HasOne("WalletApi.Models.User", null)
+                    b.HasOne("WalletApi.Data.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -416,7 +448,7 @@ namespace WalletApi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("WalletApi.Models.User", null)
+                    b.HasOne("WalletApi.Data.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -425,16 +457,16 @@ namespace WalletApi.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
                 {
-                    b.HasOne("WalletApi.Models.User", null)
+                    b.HasOne("WalletApi.Data.Entities.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("WalletApi.Models.Account", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.Account", b =>
                 {
-                    b.HasOne("WalletApi.Models.User", "User")
+                    b.HasOne("WalletApi.Data.Entities.User", "User")
                         .WithMany("Accounts")
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -444,21 +476,38 @@ namespace WalletApi.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("WalletApi.Models.Transaction", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.Transaction", b =>
                 {
-                    b.HasOne("WalletApi.Models.Account", "Account")
+                    b.HasOne("WalletApi.Data.Entities.Account", "Account")
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WalletApi.Data.Entities.Account", "ReceiverAccount")
+                        .WithMany()
+                        .HasForeignKey("ReceiverAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("FK_Transactions_Accounts");
+                        .HasConstraintName("FK_Transactions_ReceiverAccount");
+
+                    b.HasOne("WalletApi.Data.Entities.Account", "SenderAccount")
+                        .WithMany()
+                        .HasForeignKey("SenderAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Transactions_SenderAccount");
 
                     b.Navigation("Account");
+
+                    b.Navigation("ReceiverAccount");
+
+                    b.Navigation("SenderAccount");
                 });
 
-            modelBuilder.Entity("WalletApi.Models.User", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.User", b =>
                 {
-                    b.HasOne("WalletApi.Models.DocumentType", "DocumentType")
+                    b.HasOne("WalletApi.Data.Entities.DocumentType", "DocumentType")
                         .WithMany("Users")
                         .HasForeignKey("DocumentTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -468,17 +517,17 @@ namespace WalletApi.Migrations
                     b.Navigation("DocumentType");
                 });
 
-            modelBuilder.Entity("WalletApi.Models.Account", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.Account", b =>
                 {
                     b.Navigation("Transactions");
                 });
 
-            modelBuilder.Entity("WalletApi.Models.DocumentType", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.DocumentType", b =>
                 {
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("WalletApi.Models.User", b =>
+            modelBuilder.Entity("WalletApi.Data.Entities.User", b =>
                 {
                     b.Navigation("Accounts");
                 });

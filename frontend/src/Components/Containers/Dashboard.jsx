@@ -4,37 +4,38 @@ import {
   Typography,
   Card,
   CardContent,
+  CircularProgress,
+  Alert,
   IconButton,
-  Skeleton,
   Stack,
   Chip,
   Divider,
-  Alert,
 } from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import {
+  AccountBalanceWallet,
+  Visibility,
+  VisibilityOff,
+} from "@mui/icons-material";
+import DepositForm from "../DepositForm";
 import accountService from "../../services/accountService";
 
 function Dashboard() {
-  const [accountData, setAccountData] = useState(null);
+  const [account, setAccount] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState("");
   const [showBalance, setShowBalance] = useState(true);
-
   useEffect(() => {
     const fetchBalance = async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const data = await accountService.getMyAccount();
-        setAccountData(data);
+        const data = await accountService.getBalance();
+        setAccount(data);
+        setError("");
       } catch (err) {
-        const mensajeError =
-          err.response?.data?.mensaje ||
-          err.message ||
-          "Error al obtener los datos de la cuenta.";
-        setError(mensajeError);
+        if (err.response?.status === 401) {
+          setError("Sesión expirada. Vuelva a iniciar sesión.");
+        } else {
+          setError("No se pudo obtener el saldo de la cuenta.");
+        }
       } finally {
         setLoading(false);
       }
@@ -47,108 +48,126 @@ function Dashboard() {
     setShowBalance((prev) => !prev);
   };
 
-  const formattedBalance = new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: accountData?.currency || "ARS",
-  }).format(accountData?.balance || 0);
+  const handleDepositSuccess = (newBalance) => {
+    setAccount((prev) => (prev ? { ...prev, balance: newBalance } : prev));
+  };
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "50vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
-    <Box sx={{ maxWidth: 480, mx: "auto", mt: 4, px: 2 }}>
-      <Box textAlign="center" mb={3}>
-        <Typography variant="h4" fontWeight="bold" color="#004b93">
-          ¡Bienvenido a DigitalArs!
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Gestiona tus fondos en pesos argentinos en todo momento.
-        </Typography>
-      </Box>
+    <Box>
+      <Typography variant="h5" component="h2" fontWeight="bold" sx={{ mb: 3 }}>
+        Dashboard
+      </Typography>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
           {error}
         </Alert>
       )}
 
-      <Card
-        elevation={4}
-        sx={{
-          borderRadius: 4,
-          overflow: "hidden",
-          border: "1px solid #e0e0e0",
-        }}
-      >
+      {account && (
         <Box
           sx={{
-            bgcolor: "#004b93",
-            color: "white",
-            p: 2.5,
-            textAlign: "center",
+            display: "flex",
+            flexDirection: { xs: "column", md: "row" },
+            gap: 3,
+            alignItems: "flex-start",
           }}
         >
-          <Box
+          {/* Balance Card con botón de ojo y estado activo */}
+          <Card
+            elevation={3}
             sx={{
-              display: "inline-flex",
-              p: 1.2,
-              bgcolor: "rgba(255, 255, 255, 0.15)",
-              borderRadius: "50%",
-              mb: 1,
+              borderRadius: 3,
+              overflow: "hidden",
+              boxShadow: "0 10px 30px rgba(7, 79, 150, 0.12)",
+              minWidth: { xs: "100%", md: 320 },
             }}
           >
-            <AccountBalanceWalletIcon sx={{ fontSize: 28 }} />
-          </Box>
-          <Typography variant="h6" fontWeight="bold">
-            Saldo Disponible
-          </Typography>
-          <Typography variant="caption" sx={{ opacity: 0.85 }}>
-            CVU: {accountData?.cvu || "••••••••••••••••••••••"}
-          </Typography>
-        </Box>
-
-        <CardContent sx={{ p: 3, textAlign: "center" }}>
-          <Stack
-            direction="row"
-            justifyContent="center"
-            alignItems="center"
-            spacing={1}
-            mb={1}
-          >
-            {loading ? (
-              <Skeleton variant="text" width={180} height={50} />
-            ) : (
-              <Typography variant="h3" fontWeight="bold" color="#004b93">
-                {showBalance ? formattedBalance : "••••••••"}
-              </Typography>
-            )}
-
-            <IconButton
-              onClick={toggleShowBalance}
-              size="small"
-              sx={{ color: "#004b93" }}
-              aria-label="Toggle balance visibility"
+            <Box
+              sx={{
+                bgcolor: "secondary.main",
+                color: "white",
+                p: 2.5,
+                textAlign: "center",
+              }}
             >
-              {showBalance ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </Stack>
+              <AccountBalanceWallet sx={{ fontSize: 36, mb: 0.5 }} />
+              <Typography variant="body2" sx={{ opacity: 0.9 }}>
+                Saldo disponible
+              </Typography>
 
-          <Divider sx={{ my: 2 }} />
+              <Stack
+                direction="row"
+                justifyContent="center"
+                alignItems="center"
+                spacing={1}
+                sx={{ mt: 0.5 }}
+              >
+                <Typography variant="h4" fontWeight="bold">
+                  {showBalance
+                    ? `$ ${account.balance.toLocaleString("es-AR", {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}`
+                    : "••••••••"}
+                </Typography>
+                <IconButton
+                  onClick={toggleShowBalance}
+                  size="small"
+                  sx={{ color: "white" }}
+                  aria-label="Ocultar o mostrar saldo"
+                >
+                  {showBalance ? (
+                    <VisibilityOff fontSize="small" />
+                  ) : (
+                    <Visibility fontSize="small" />
+                  )}
+                </IconButton>
+              </Stack>
 
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Typography variant="body2" color="text.secondary">
-              Alias: <strong>{accountData?.alias || "—"}</strong>
-            </Typography>
-            <Chip
-              label="Activa"
-              color="primary"
-              size="small"
-              sx={{ bgcolor: "#004b93", fontWeight: "bold" }}
-            />
-          </Stack>
-        </CardContent>
-      </Card>
+              <Typography variant="caption" sx={{ opacity: 0.8 }}>
+                {account.currency}
+              </Typography>
+            </Box>
+
+            <CardContent sx={{ p: 2 }}>
+              <Stack
+                direction="row"
+                justifyContent="space-between"
+                alignItems="center"
+                mb={1}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  <strong>Alias:</strong> {account.alias}
+                </Typography>
+                <Chip label="Activa" color="primary" size="small" />
+              </Stack>
+              <Divider sx={{ my: 1 }} />
+              <Typography variant="body2" color="text.secondary">
+                <strong>CVU:</strong> {account.cvu}
+              </Typography>
+            </CardContent>
+          </Card>
+
+          {/* Deposit Form */}
+          <DepositForm onDepositSuccess={handleDepositSuccess} />
+        </Box>
+      )}
     </Box>
   );
 }
