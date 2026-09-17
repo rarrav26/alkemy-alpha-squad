@@ -43,6 +43,32 @@ function Navbar() {
     handleClose();
   };
 
+
+  async function handleLogout() {
+    try {
+        const response = await fetch('http://localhost:5016/api/auth/logout', { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}` 
+            },
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            console.log(data.message); 
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            window.location.href = '/auth';
+        } else {
+            const errorData = await response.json();
+            console.error('Error al cerrar sesión:', errorData);
+        }
+    } catch (error) {
+        console.error('Error de red:', error);
+    }
+}
+
   return (
     <AppBar position="sticky" elevation={1} sx={{ bgcolor: "#074f96" }}>
       <Toolbar sx={{ px: { xs: 2, sm: 4 } }}>
@@ -148,7 +174,7 @@ function Navbar() {
 
                 <Divider />
 
-                <MenuItem onClick={() => handleNavigate('Logout')} sx={{ color: '#ef4444', '&:hover': { backgroundColor: '#fef2f2' } }}>
+                <MenuItem onClick={(e) => handleLogout(e)} sx={{ color: '#ef4444', '&:hover': { backgroundColor: '#fef2f2' } }}>
                   <ListItemIcon>
                     <LogoutIcon fontSize="small" sx={{ color: '#ef4444' }} />
                   </ListItemIcon>

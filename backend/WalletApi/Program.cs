@@ -85,16 +85,16 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    
+
 })
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = false,
+            ValidateIssuer = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
 
-            ValidateAudience = false,
+            ValidateAudience = true,
             ValidAudience = builder.Configuration["Jwt:Audience"],
 
             ValidateLifetime = true,
@@ -104,7 +104,7 @@ builder.Services.AddAuthentication(options =>
                 Encoding.UTF8.GetBytes(jwtKey)),
 
             ClockSkew = TimeSpan.Zero,
-            
+
             RoleClaimType = ClaimTypes.Role
         };
         options.Events = new JwtBearerEvents
@@ -115,7 +115,7 @@ builder.Services.AddAuthentication(options =>
                     .GetRequiredService<UserManager<User>>();
 
                 // Extrae el ID del usuario autenticado en la petición
-                var userId = context.Principal?.FindFirstValue("sub") 
+                var userId = context.Principal?.FindFirstValue("sub")
           ?? context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 if (string.IsNullOrEmpty(userId))
@@ -162,7 +162,7 @@ using (var scope = app.Services.CreateScope())
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
         var userManager = services.GetRequiredService<UserManager<User>>();
-        
+
         await DbSeeder.SeedAsync(roleManager, userManager);
     }
     catch (Exception ex)
