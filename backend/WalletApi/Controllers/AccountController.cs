@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using WalletApi.Dtos;
 using WalletApi.Services;
@@ -179,6 +180,11 @@ public class AccountController : ControllerBase
         {
             _logger.LogWarning("Transfer business rule error for user {UserId}: {Message}", userId, ex.Message);
             return BadRequest(new { message = ex.Message });
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            _logger.LogWarning("Transfer concurrency conflict for user {UserId}: {Message}", userId, ex.Message);
+            return BadRequest(new { message = "Se detectó una operación concurrente. Por favor, reintente la transferencia." });
         }
         catch (Exception ex)
         {

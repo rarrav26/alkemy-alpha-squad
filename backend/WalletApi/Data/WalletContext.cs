@@ -56,7 +56,7 @@ public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
             entity.ToTable("Accounts");
             entity.HasKey(e => e.Id);
 
-            entity.Property(e => e.Balance).HasPrecision(18, 2).HasDefaultValue(0m);
+            entity.Property(e => e.Balance).HasPrecision(18, 2).HasDefaultValue(0m).IsConcurrencyToken();
             entity.Property(e => e.Currency).HasMaxLength(10).HasDefaultValue("ARS");
             entity.Property(e => e.Alias).HasMaxLength(100).IsRequired();
             entity.Property(e => e.Cvu).HasMaxLength(22).IsUnicode(false).IsRequired();
