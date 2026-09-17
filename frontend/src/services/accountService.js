@@ -1,10 +1,7 @@
-import api from './api';
+import api from "./api";
 
-/**
- * Returns the auth header with the JWT token from localStorage.
- */
 function authHeader() {
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
@@ -16,9 +13,9 @@ export const accountService = {
    */
   async deposit(amount) {
     const response = await api.post(
-      '/account/deposit',
+      "/account/deposit",
       { amount },
-      { headers: authHeader() }
+      { headers: authHeader() },
     );
     return response.data;
   },
@@ -28,7 +25,13 @@ export const accountService = {
    * @returns {Promise<{id: number, balance: number, currency: string, alias: string, cvu: string, createdAt: string}>}
    */
   async getBalance() {
-    const response = await api.get('/account/balance', {
+    const response = await api.get("/account/balance", {
+      headers: authHeader(),
+    });
+    return response.data;
+  },
+  async getMyAccount() {
+    const response = await api.get("/account/me", {
       headers: authHeader(),
     });
     return response.data;

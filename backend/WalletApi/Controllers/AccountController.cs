@@ -104,4 +104,11 @@ public class AccountController : ControllerBase
         }
         return userId;
     }
+
+
+    [HttpGet("me")]
+    public async Task<IActionResult> ObtenerMiCuenta()
+    {
+        return await GetBalance();
+    }
 }

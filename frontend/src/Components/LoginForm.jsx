@@ -17,7 +17,6 @@ import { Visibility, VisibilityOff, LoginOutlined } from "@mui/icons-material";
 import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 
-
 function LoginForm({ onToggleRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -38,6 +37,9 @@ function LoginForm({ onToggleRegister }) {
       });
 
       const data = response.data;
+      if (data?.token) {
+        localStorage.setItem("token", data.token);
+      }
       if (data?.userId) {
         localStorage.setItem("userId", data.userId);
         localStorage.setItem("token", data.token);
@@ -90,7 +92,6 @@ function LoginForm({ onToggleRegister }) {
       setLoading(false);
     }
   };
-
 
   return (
     <Card
@@ -247,7 +248,7 @@ function LoginForm({ onToggleRegister }) {
                 Regístrate aquí
               </Button>
             </Typography>
-          </Box> 
+          </Box>
         </Box>
       </CardContent>
     </Card>

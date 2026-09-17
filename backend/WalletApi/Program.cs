@@ -15,6 +15,7 @@ using WalletApi.Services;
 using WalletApi.Security;
 var builder = WebApplication.CreateBuilder(args);
 
+System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 
 
@@ -53,6 +54,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 
 // Dependency Injection for application services & repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IAliasGeneratorService, AliasGeneratorService>();
 builder.Services.AddScoped<ICvuGeneratorService, CvuGeneratorService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -78,6 +80,7 @@ builder.Services.AddCors(options =>
 var jwtKey = builder.Configuration["Jwt:Key"]
     ?? throw new InvalidOperationException("No se configuró Jwt:Key.");
 
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -88,10 +91,10 @@ builder.Services.AddAuthentication(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
+            ValidateIssuer = false,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
 
-            ValidateAudience = true,
+            ValidateAudience = false,
             ValidAudience = builder.Configuration["Jwt:Audience"],
 
             ValidateLifetime = true,
@@ -112,7 +115,8 @@ builder.Services.AddAuthentication(options =>
                     .GetRequiredService<UserManager<User>>();
 
                 // Extrae el ID del usuario autenticado en la petición
-                var userId = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var userId = context.Principal?.FindFirstValue("sub") 
+          ?? context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
 
                 if (string.IsNullOrEmpty(userId))
                 {
@@ -128,7 +132,8 @@ builder.Services.AddAuthentication(options =>
                 }
 
                 // Si el SecurityStamp cambió en la BD (ej. cambio de clave o logout forzado), rechaza el token
-                var tokenStamp = context.Principal?.FindFirstValue("AspNet.Identity.SecurityStamp");
+                var tokenStamp = context.Principal?.FindFirstValue("AspNet.Identity.SecurityStamp")
+              ?? context.Principal?.FindFirstValue("security_stamp");
                 if (tokenStamp != user.SecurityStamp)
                 {
                     context.Fail("La sesión ha expirado o ha sido revocada.");
