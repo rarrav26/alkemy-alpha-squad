@@ -52,7 +52,7 @@ public class AuthService : IAuthService
 
         // Aquí sí existe _userManager:
         await _userManager.UpdateSecurityStampAsync(user);
-    }   
+    }
     //Agregado de mas-------------------------------------------------------------
     public async Task<LoginResponse> LoginAsync(LoginRequest request)
     {

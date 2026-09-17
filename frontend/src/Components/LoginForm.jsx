@@ -42,6 +42,8 @@ function LoginForm({ onToggleRegister }) {
         localStorage.setItem("userId", data.userId);
       }
       console.log("Login exitoso:", data.message);
+      console.log(data.token)
+      localStorage.setItem("token", data.token);
 
       navigate("/dashboard", { replace: true });
     } catch (error) {
