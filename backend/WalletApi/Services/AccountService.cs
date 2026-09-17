@@ -44,7 +44,9 @@ public class AccountService : IAccountService
 
             var deposit = new Transaction
             {
-                AccountId = account.Id,
+                SenderAccount = account,
+                ReceiverAccount = account,
+                Account = account,
                 Amount = request.Amount,
                 Type = "credit",
                 Description = "Depósito",

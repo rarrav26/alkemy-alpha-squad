@@ -282,10 +282,19 @@ namespace WalletApi.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
+
+                    b.Property<int>("ReceiverAccountId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SenderAccountId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Type")
                         .IsRequired()
@@ -295,6 +304,10 @@ namespace WalletApi.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AccountId");
+
+                    b.HasIndex("ReceiverAccountId");
+
+                    b.HasIndex("SenderAccountId");
 
                     b.ToTable("Transactions", (string)null);
                 });
@@ -466,10 +479,27 @@ namespace WalletApi.Migrations
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WalletApi.Data.Entities.Account", "ReceiverAccount")
+                        .WithMany()
+                        .HasForeignKey("ReceiverAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("FK_Transactions_Accounts");
+                        .HasConstraintName("FK_Transactions_ReceiverAccount");
+
+                    b.HasOne("WalletApi.Data.Entities.Account", "SenderAccount")
+                        .WithMany()
+                        .HasForeignKey("SenderAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Transactions_SenderAccount");
 
                     b.Navigation("Account");
+
+                    b.Navigation("ReceiverAccount");
+
+                    b.Navigation("SenderAccount");
                 });
 
             modelBuilder.Entity("WalletApi.Data.Entities.User", b =>
