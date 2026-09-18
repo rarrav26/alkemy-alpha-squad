@@ -11,6 +11,7 @@ import AuthComponent from "./Components/Containers/Auth";
 import Dashboard from "./Components/Containers/Dashboard";
 import TransactionHistory from "./Components/Containers/TransactionHistory";
 import RootLayout from "./Components/Containers/RootLayout";
+import LandingPage from "./Components/Containers/LandingPage";
 import AuthContext from "./Contexts/AuthContext";
 
 
@@ -25,15 +26,26 @@ const PublicRoute = () => {
   return !userId ? <AuthComponent /> : <Navigate to="/dashboard" replace />;
 };
 
+// Landing page: show welcome if not logged in, redirect to dashboard if logged in
+const LandingRoute = () => {
+  const { userId } = useContext(AuthContext);
+  return !userId ? <LandingPage /> : <Navigate to="/dashboard" replace />;
+};
+
 const router = createBrowserRouter([
   {
+    // Landing page — public welcome screen
     path: "/",
-    element: <ProtectedRoute />, // Protege todo el layout principal
+    element: <LandingRoute />,
+  },
+  {
+    // Authenticated app routes
+    path: "/",
+    element: <ProtectedRoute />,
     children: [
       {
         element: <RootLayout />,
         children: [
-          { path: "", element: <Navigate to="/dashboard" replace /> }, // Si entra a "/" va a dashboard si está logueado
           { path: "dashboard", element: <Dashboard /> },
           { path: "transactionHistory", element: <TransactionHistory /> },
         ],
