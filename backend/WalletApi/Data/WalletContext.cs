@@ -74,26 +74,28 @@ public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-            entity.ToTable("Transactions");
+                entity.ToTable("Transactions");
             entity.HasKey(e => e.Id);
-
+            // Relación con la Cuenta Titular (dueña del movimiento)
+            entity.HasOne(t => t.Account)
+                .WithMany(a => a.Transactions)
+                .HasForeignKey(t => t.AccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // Relación con la Cuenta Contraparte
+            entity.HasOne(t => t.CounterpartAccount)
+                .WithMany()
+                .HasForeignKey(t => t.CounterpartAccountId)
+                .OnDelete(DeleteBehavior.Restrict);
+            // Autorreferencia: Movimiento Espejo
+            entity.HasOne(t => t.RelatedTransaction)
+                .WithMany()
+                .HasForeignKey(t => t.RelatedTransactionId)
+                .OnDelete(DeleteBehavior.Restrict);
             entity.Property(e => e.Amount).HasPrecision(18, 2).IsRequired();
             entity.Property(e => e.Type).HasMaxLength(20).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
 
-            entity.HasOne(d => d.SenderAccount)
-         .WithMany()
-         .HasForeignKey(d => d.SenderAccountId)
-         .OnDelete(DeleteBehavior.Restrict)
-         .HasConstraintName("FK_Transactions_SenderAccount");
-
-            // Relación con la cuenta receptora
-            entity.HasOne(d => d.ReceiverAccount)
-                .WithMany()
-                .HasForeignKey(d => d.ReceiverAccountId)
-                .OnDelete(DeleteBehavior.Restrict)
-                .HasConstraintName("FK_Transactions_ReceiverAccount");
         });
 
         modelBuilder.Entity<IdentityRole<int>>().HasData(

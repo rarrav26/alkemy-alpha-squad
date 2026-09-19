@@ -3,25 +3,23 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 namespace WalletApi.Data.Entities;
 
-public partial class Transaction
+
+public class Transaction
 {
     public int Id { get; set; }
-
-    public int SenderAccountId { get; set; }
-    public required Account SenderAccount { get; set; }
-
-    public int ReceiverAccountId { get; set; }
-    public required Account ReceiverAccount { get; set; }
-
-    public decimal Amount { get; set; }
-    public DateTime Date { get; set; }
-
-    public string Type { get; set; } = string.Empty;
-
-    public string Description { get; set; } = string.Empty;
-
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
+    // Cuenta titular de este movimiento (a la que se le debita o acredita saldo)
+    public int AccountId { get; set; }
     public virtual Account Account { get; set; } = null!;
+    public decimal Amount { get; set; }
+    
+    // "debit" o "credit"
+    public string Type { get; set; } = string.Empty; 
+    public string Description { get; set; } = string.Empty;
+    // Contraparte: la otra cuenta involucrada en la transferencia
+    public int? CounterpartAccountId { get; set; }
+    public virtual Account? CounterpartAccount { get; set; }
+    // Movimiento espejo (criterio: "referenciados entre sí")
+    public int? RelatedTransactionId { get; set; }
+    public virtual Transaction? RelatedTransaction { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 }
-
