@@ -193,19 +193,32 @@ public class AccountService : IAccountService
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            sourceAccount.Balance -= request.Amount;
-            if (sourceAccount.Balance < 0)
+            // 1. Débito seguro y atómico en Origen (La BD verifica que el saldo alcance)
+            var debitoExitoso = await _context.Accounts
+                .Where(a => a.Id == sourceAccount.Id && a.Balance >= request.Amount)
+                .ExecuteUpdateAsync(setter => setter.SetProperty(
+                    a => a.Balance, 
+                    a => a.Balance - request.Amount
+                ));
+
+            if (debitoExitoso == 0)
             {
-                throw new InvalidOperationException("Saldo insuficiente. La cuenta no puede quedar en negativo.");
+                throw new InvalidOperationException("Saldo insuficiente o la cuenta fue modificada simultáneamente.");
             }
 
-            targetAccount.Balance += request.Amount;
+            // 2. Crédito atómico en Destino
+            await _context.Accounts
+                .Where(a => a.Id == targetAccount.Id)
+                .ExecuteUpdateAsync(setter => setter.SetProperty(
+                    a => a.Balance, 
+                    a => a.Balance + request.Amount
+                ));
 
             var now = DateTime.UtcNow;
             var destFullName = $"{targetAccount.User.FirstName} {targetAccount.User.LastName}".Trim();
             var sourceFullName = $"{sourceUser.FirstName} {sourceUser.LastName}".Trim();
 
-            // 1. Débito (el que envía)
+            // 3. Generación de los 2 movimientos vinculados
             var debitTx = new Transaction
             {
                 AccountId = sourceAccount.Id,
@@ -218,7 +231,6 @@ public class AccountService : IAccountService
             _context.Transactions.Add(debitTx);
             await _context.SaveChangesAsync();
 
-            // 2. Crédito (el que recibe)
             var creditTx = new Transaction
             {
                 AccountId = targetAccount.Id,
@@ -232,18 +244,20 @@ public class AccountService : IAccountService
             _context.Transactions.Add(creditTx);
             await _context.SaveChangesAsync();
 
-            // 3. Vinculación bidireccional
             debitTx.RelatedTransactionId = creditTx.Id;
             await _context.SaveChangesAsync();
 
+            // 4. Confirmación de toda la operación
             await transaction.CommitAsync();
+
+            var nuevoSaldo = sourceAccount.Balance - request.Amount;
 
             return new TransferResponseDto
             {
                 DebitTransactionId = debitTx.Id,
                 CreditTransactionId = creditTx.Id,
                 Amount = request.Amount,
-                NewBalance = sourceAccount.Balance,
+                NewBalance = nuevoSaldo,
                 RecipientName = destFullName,
                 RecipientAlias = targetAccount.Alias,
                 RecipientCvu = targetAccount.Cvu,
