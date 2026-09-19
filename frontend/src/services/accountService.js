@@ -36,6 +36,34 @@ export const accountService = {
     });
     return response.data;
   },
+
+  /**
+   * Check recipient information by Alias or CVU before transferring.
+   * @param {string} destination - Alias or 22-digit CVU.
+   * @returns {Promise<{accountId: number, recipientName: string, alias: string, cvu: string}>}
+   */
+  async lookupRecipient(destination) {
+    const response = await api.get("/transactions/lookup", {
+      params: { destination },
+      headers: authHeader(),
+    });
+    return response.data;
+  },
+
+  /**
+   * Transfer money to another account by Alias or CVU.
+   * @param {string} destination - Alias or 22-digit CVU.
+   * @param {number} amount - The amount to transfer (> 0, max 2 decimals).
+   * @returns {Promise<{debitTransactionId: number, creditTransactionId: number, amount: number, newBalance: number, recipientName: string, recipientAlias: string, recipientCvu: string, date: string, message: string}>}
+   */
+  async transfer(destination, amount) {
+    const response = await api.post(
+      "/transactions/transfer",
+      { destination, amount },
+      { headers: authHeader() }
+    );
+    return response.data;
+  },
 };
 
 export default accountService;

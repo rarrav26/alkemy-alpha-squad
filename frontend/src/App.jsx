@@ -1,4 +1,4 @@
-import { useState ,useContext} from "react";
+import { useState, useContext } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme/theme";
 import {
@@ -16,20 +16,19 @@ import AuthContext from "./Contexts/AuthContext";
 
 
 const ProtectedRoute = () => {
-  const { userId } = useContext(AuthContext);
-  return userId ? <Outlet /> : <Navigate to="/auth" replace />;
+  const { userId, userToken } = useContext(AuthContext);
+  return (userId && userToken) ? <Outlet /> : <Navigate to="/auth" replace />;
 };
 
-
 const PublicRoute = () => {
-  const { userId } = useContext(AuthContext);
-  return !userId ? <AuthComponent /> : <Navigate to="/dashboard" replace />;
+  const { userId, userToken } = useContext(AuthContext);
+  return (!userId || !userToken) ? <AuthComponent /> : <Navigate to="/dashboard" replace />;
 };
 
 // Landing page: show welcome if not logged in, redirect to dashboard if logged in
 const LandingRoute = () => {
-  const { userId } = useContext(AuthContext);
-  return !userId ? <LandingPage /> : <Navigate to="/dashboard" replace />;
+  const { userId, userToken } = useContext(AuthContext);
+  return (!userId || !userToken) ? <LandingPage /> : <Navigate to="/dashboard" replace />;
 };
 
 const router = createBrowserRouter([
@@ -59,7 +58,7 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-const [userId, setUserId] = useState(() => {
+  const [userId, setUserId] = useState(() => {
     return localStorage.getItem("userId") || null;
   });
   const [userToken, setUserToken] = useState(() => {

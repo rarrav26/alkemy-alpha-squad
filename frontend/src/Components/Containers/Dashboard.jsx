@@ -18,6 +18,7 @@ import {
   VisibilityOff,
 } from "@mui/icons-material";
 import DepositForm from "../DepositForm";
+import TransferForm from "./TransferForm";
 import accountService from "../../services/accountService";
 import TransactionHistory from "./TransactionHistory";
 
@@ -26,7 +27,8 @@ function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [showBalance, setShowBalance] = useState(true);
-  const [showTranseferCard, setShowTranseferCard] = useState(false);
+  const [activeAction, setActiveAction] = useState(null); // 'deposit' | 'transfer' | null
+  const [historyKey, setHistoryKey] = useState(0);
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -52,8 +54,9 @@ function Dashboard() {
     setShowBalance((prev) => !prev);
   };
 
-  const handleDepositSuccess = (newBalance) => {
+  const handleOperationSuccess = (newBalance) => {
     setAccount((prev) => (prev ? { ...prev, balance: newBalance } : prev));
+    setHistoryKey((prev) => prev + 1);
   };
 
   if (loading) {
@@ -74,7 +77,23 @@ function Dashboard() {
   return (
     <Box sx={{ minHeight: "100vh" }}>
       {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
+        <Alert
+          severity="error"
+          sx={{ mb: 3 }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              variant="outlined"
+              onClick={() => {
+                localStorage.clear();
+                window.location.href = "/auth";
+              }}
+            >
+              Iniciar Sesión
+            </Button>
+          }
+        >
           {error}
         </Alert>
       )}
@@ -155,19 +174,47 @@ function Dashboard() {
               </Box>
               <Box>
                 <Button
-                  onClick={() => setShowTranseferCard(!showTranseferCard)}
-                  sx={{ backgroundColor: "#FFF", color: "#074f96", mr: 1 }}
-                >
-                  Deposito
-                </Button>
-                <Button
-                  onClick={!setShowTranseferCard}
+                  onClick={() =>
+                    setActiveAction(activeAction === "deposit" ? null : "deposit")
+                  }
                   sx={{
-                    backgroundColor: "rgba(233, 241, 255, 1.000)",
-                    color: "#074f96",
+                    backgroundColor:
+                      activeAction === "deposit" ? "#FFF" : "rgba(255, 255, 255, 0.2)",
+                    color: activeAction === "deposit" ? "#074f96" : "#FFF",
+                    fontWeight: "bold",
+                    mr: 1,
+                    "&:hover": {
+                      backgroundColor:
+                        activeAction === "deposit"
+                          ? "#f0f0f0"
+                          : "rgba(255, 255, 255, 0.35)",
+                    },
                   }}
                 >
-                  Transeferencia
+                  Depósito
+                </Button>
+                <Button
+                  onClick={() =>
+                    setActiveAction(
+                      activeAction === "transfer" ? null : "transfer"
+                    )
+                  }
+                  sx={{
+                    backgroundColor:
+                      activeAction === "transfer"
+                        ? "#FFF"
+                        : "rgba(255, 255, 255, 0.2)",
+                    color: activeAction === "transfer" ? "#074f96" : "#FFF",
+                    fontWeight: "bold",
+                    "&:hover": {
+                      backgroundColor:
+                        activeAction === "transfer"
+                          ? "#f0f0f0"
+                          : "rgba(255, 255, 255, 0.35)",
+                    },
+                  }}
+                >
+                  Transferencia
                 </Button>
               </Box>
             </Box>
@@ -190,6 +237,19 @@ function Dashboard() {
               </Typography>
             </CardContent>
           </Card>
+
+          {/* Formulario Dinámico: Depósito o Transferencia */}
+          {activeAction === "deposit" && (
+            <DepositForm onDepositSuccess={handleOperationSuccess} />
+          )}
+
+          {activeAction === "transfer" && (
+            <TransferForm
+              availableBalance={account.balance}
+              onTransferSuccess={handleOperationSuccess}
+            />
+          )}
+
           <Card
             elevation={3}
             sx={{
@@ -204,16 +264,12 @@ function Dashboard() {
             }}
           >
             <TransactionHistory
+              key={historyKey}
               limit={5}
               title="Últimos Movimientos"
               showFilters={false}
             />
           </Card>
-
-          {/* Deposit Form */}
-          {showTranseferCard && (
-            <DepositForm onDepositSuccess={handleDepositSuccess} />
-          )}
         </Box>
       )}
     </Box>

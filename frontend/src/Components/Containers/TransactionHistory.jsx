@@ -201,7 +201,7 @@ function TransactionHistory({
 
                     <Box sx={{ flex: 1, textAlign: "left" }}>
                       <Typography fontWeight="bold">
-                        Transacción #{tx.id} - {tx.tipo}
+                        {tx.description || tx.tipo}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         {formattedDate}
