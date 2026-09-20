@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WalletApi.Dtos;
 using WalletApi.Services;
+using WalletApi.Interfaces;
 using System.Security.Claims;
 namespace WalletApi.Controllers;
 

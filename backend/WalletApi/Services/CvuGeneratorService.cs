@@ -2,7 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using WalletApi.Models;
-
+using WalletApi.Interfaces;
 namespace WalletApi.Services;
 
 public class CvuGeneratorService : ICvuGeneratorService

@@ -203,7 +203,7 @@ public class AuthService : IAuthService
                 DocumentTypeCode = documentType.Code,
                 DocumentNumber = user.DocumentNumber,
                 Role = DefaultRole,
-                Account = new AccountDto
+                Account = new AccountResponseDto
                 {
                     Id = account.Id,
                     Balance = account.Balance,

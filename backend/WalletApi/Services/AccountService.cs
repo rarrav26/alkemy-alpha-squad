@@ -2,16 +2,24 @@ using Microsoft.EntityFrameworkCore;
 using WalletApi.Data.Entities;
 using WalletApi.Dtos;
 using WalletApi.Models;
+using WalletApi.Interfaces;
 
 namespace WalletApi.Services;
 
 public class AccountService : IAccountService
 {
     private readonly WalletContext _context;
+    private readonly IAliasGeneratorService _aliasGenerator;
+    private readonly ICvuGeneratorService _cvuGenerator;
 
-    public AccountService(WalletContext context)
+    public AccountService(
+        WalletContext context,
+        IAliasGeneratorService aliasGenerator,
+        ICvuGeneratorService cvuGenerator)
     {
         _context = context;
+        _aliasGenerator = aliasGenerator;
+        _cvuGenerator = cvuGenerator;
     }
 
     // 1. DEPÓSITO DE DINERO
@@ -70,7 +78,7 @@ public class AccountService : IAccountService
     }
 
     // 2. CONSULTAR SALDO
-    public async Task<AccountDto> GetBalanceAsync(int userId)
+    public async Task<AccountResponseDto> GetBalanceAsync(int userId)
     {
         var account = await _context.Accounts
             .AsNoTracking()
@@ -81,7 +89,7 @@ public class AccountService : IAccountService
             throw new InvalidOperationException("No se encontró una cuenta asociada al usuario.");
         }
 
-        return new AccountDto
+        return new AccountResponseDto
         {
             Id = account.Id,
             Balance = account.Balance,
@@ -298,6 +306,50 @@ public class AccountService : IAccountService
                 RelatedTransactionId = t.RelatedTransactionId
             })
             .ToListAsync();
+    }
+
+    // 6. ASEGURAR / CREAR CUENTA BANCARIA PARA USUARIO
+    public async Task<AccountResponseDto> EnsureAccountForUserAsync(int userId)
+    {
+        var existingAccount = await _context.Accounts.FirstOrDefaultAsync(a => a.UserId == userId);
+        if (existingAccount != null)
+        {
+            return new AccountResponseDto
+            {
+                Id = existingAccount.Id,
+                Balance = existingAccount.Balance,
+                Currency = existingAccount.Currency,
+                Alias = existingAccount.Alias,
+                Cvu = existingAccount.Cvu,
+                CreatedAt = existingAccount.CreatedAt
+            };
+        }
+
+        var alias = await _aliasGenerator.GenerateUniqueAliasAsync();
+        var cvu = await _cvuGenerator.GenerateUniqueCvuAsync();
+
+        var account = new Account
+        {
+            UserId = userId,
+            Balance = 10000m,
+            Currency = "ARS",
+            Alias = alias,
+            Cvu = cvu,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Accounts.Add(account);
+        await _context.SaveChangesAsync();
+
+        return new AccountResponseDto
+        {
+            Id = account.Id,
+            Balance = account.Balance,
+            Currency = account.Currency,
+            Alias = account.Alias,
+            Cvu = account.Cvu,
+            CreatedAt = account.CreatedAt
+        };
     }
 
     // Helper privado para formato de destino

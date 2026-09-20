@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
 using WalletApi.Models;
+using WalletApi.Interfaces;
 
 namespace WalletApi.Services;
 

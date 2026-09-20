@@ -7,4 +7,5 @@ public class AccountResponseDto
     public string Alias { get; set; } = string.Empty;
     public decimal Balance { get; set; }
     public string Currency { get; set; } = "ARS";
+    public DateTime CreatedAt { get; set; }
 }

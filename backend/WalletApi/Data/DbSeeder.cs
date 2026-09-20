@@ -1,16 +1,24 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using WalletApi.Data.Entities;
+using WalletApi.Interfaces;
 
 namespace WalletApi.Data;
 
 public static class DbSeeder
 {
-    public static async Task SeedAsync(RoleManager<IdentityRole<int>> roleManager, UserManager<User> userManager)
+    public static async Task SeedAsync(
+        RoleManager<IdentityRole<int>> roleManager,
+        UserManager<User> userManager,
+        IConfiguration configuration,
+        IAccountService accountService,
+        ILogger logger)
     {
-        // Ensure roles
-        string[] roles = new[] { "Usuario", "Administrador" };
+        // 1. Ensure roles
+        string[] roles = ["Usuario", "Administrador"];
 
         foreach (var roleName in roles)
         {
@@ -21,13 +29,16 @@ public static class DbSeeder
                 var result = await roleManager.CreateAsync(role);
                 if (!result.Succeeded)
                 {
-                    Console.WriteLine($"Error creating role {roleName}: {string.Join(',', result.Errors)}");
+                    logger.LogError("Error creating role {RoleName}: {Errors}", roleName, string.Join(',', result.Errors));
                 }
             }
         }
 
-        // Ensure admin user
-        var adminEmail = "admin@test.com";
+        // 2. Read Admin credentials from IConfiguration (appsettings.json or environment variables / secrets)
+        var adminEmail = configuration["AdminUser:Email"];
+        var adminPassword = configuration["AdminUser:Password"];
+
+        // 3. Ensure admin user exists
         var admin = await userManager.FindByEmailAsync(adminEmail);
         if (admin == null)
         {
@@ -43,18 +54,31 @@ public static class DbSeeder
                 IsActive = true
             };
 
-            var createResult = await userManager.CreateAsync(adminUser, "Admin123!");
+            var createResult = await userManager.CreateAsync(adminUser, adminPassword);
             if (!createResult.Succeeded)
             {
-                Console.WriteLine($"Error creating admin user: {string.Join(',', createResult.Errors)}");
+                logger.LogError("Error creating admin user: {Errors}", string.Join(',', createResult.Errors));
                 return;
             }
 
             var addToRole = await userManager.AddToRoleAsync(adminUser, "Administrador");
             if (!addToRole.Succeeded)
             {
-                Console.WriteLine($"Error adding admin user to role: {string.Join(',', addToRole.Errors)}");
+                logger.LogError("Error adding admin user to role: {Errors}", string.Join(',', addToRole.Errors));
             }
+
+            admin = adminUser;
+        }
+
+        // 4. Ensure admin has an active bank account (delegated to IAccountService)
+        try
+        {
+            var account = await accountService.EnsureAccountForUserAsync(admin.Id);
+            logger.LogInformation("Cuenta bancaria del administrador lista. Alias: {Alias}, CVU: {Cvu}", account.Alias, account.Cvu);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error al asegurar la cuenta bancaria del administrador ({Email}).", adminEmail);
         }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using WalletApi.Dtos;
 using WalletApi.Services;
-
+using WalletApi.Interfaces;
 namespace WalletApi.Controllers;
 
 [ApiController]
@@ -67,7 +67,7 @@ public class AccountController : ControllerBase
     /// Obtener el saldo y datos de la cuenta del usuario autenticado.
     /// </summary>
     [HttpGet("balance")]
-    [ProducesResponseType(typeof(AccountDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(AccountResponseDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetBalance()
     {

@@ -30,16 +30,6 @@ public class RegisterUserRequestDto
     public string Password { get; set; } = string.Empty;
 }
 
-public class AccountDto
-{
-    public int Id { get; set; }
-    public decimal Balance { get; set; }
-    public string Currency { get; set; } = "ARS";
-    public string Alias { get; set; } = string.Empty;
-    public string Cvu { get; set; } = string.Empty;
-    public DateTime CreatedAt { get; set; }
-}
-
 public class RegisterUserResponseDto
 {
     public int Id { get; set; }
@@ -50,7 +40,7 @@ public class RegisterUserResponseDto
     public string DocumentTypeCode { get; set; } = string.Empty;
     public string DocumentNumber { get; set; } = string.Empty;
     public string Role { get; set; } = string.Empty;
-    public AccountDto Account { get; set; } = null!;
+    public AccountResponseDto Account { get; set; } = null!;
 }
 
 public class DocumentTypeDto

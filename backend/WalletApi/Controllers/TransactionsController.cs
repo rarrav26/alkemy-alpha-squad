@@ -5,6 +5,7 @@ using System.Security.Claims;
 using WalletApi.Dtos;
 using WalletApi.Models;
 using WalletApi.Services;
+using WalletApi.Interfaces;
 
 namespace WalletApi.Controllers;
 

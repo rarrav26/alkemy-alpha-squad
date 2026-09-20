@@ -1,6 +1,6 @@
 using WalletApi.Dtos;
 
-namespace WalletApi.Services;
+namespace WalletApi.Interfaces;
 
 public interface IAuthService
 {

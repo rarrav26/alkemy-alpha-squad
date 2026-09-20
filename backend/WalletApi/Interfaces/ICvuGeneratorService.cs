@@ -1,4 +1,4 @@
-namespace WalletApi.Services;
+namespace WalletApi.Interfaces;
 
 public interface ICvuGeneratorService
 {

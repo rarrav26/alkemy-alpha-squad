@@ -158,16 +158,18 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
         var userManager = services.GetRequiredService<UserManager<User>>();
+        var configuration = services.GetRequiredService<IConfiguration>();
+        var accountService = services.GetRequiredService<IAccountService>();
 
-        await DbSeeder.SeedAsync(roleManager, userManager);
+        await DbSeeder.SeedAsync(roleManager, userManager, configuration, accountService, logger);
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
         logger.LogError(ex, "Ocurrió un error durante el seeding de la base de datos.");
     }
 }
