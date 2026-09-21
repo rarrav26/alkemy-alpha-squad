@@ -216,14 +216,13 @@ namespace WalletApi.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SenderAccountId = table.Column<int>(type: "int", nullable: false),
-                    ReceiverAccountId = table.Column<int>(type: "int", nullable: false),
+                    AccountId = table.Column<int>(type: "int", nullable: false),
                     Amount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Description = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    AccountId = table.Column<int>(type: "int", nullable: false)
+                    CounterpartAccountId = table.Column<int>(type: "int", nullable: true),
+                    RelatedTransactionId = table.Column<int>(type: "int", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()")
                 },
                 constraints: table =>
                 {
@@ -233,17 +232,17 @@ namespace WalletApi.Migrations
                         column: x => x.AccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Transactions_ReceiverAccount",
-                        column: x => x.ReceiverAccountId,
+                        name: "FK_Transactions_Accounts_CounterpartAccountId",
+                        column: x => x.CounterpartAccountId,
                         principalTable: "Accounts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Transactions_SenderAccount",
-                        column: x => x.SenderAccountId,
-                        principalTable: "Accounts",
+                        name: "FK_Transactions_Transactions_RelatedTransactionId",
+                        column: x => x.RelatedTransactionId,
+                        principalTable: "Transactions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -336,14 +335,14 @@ namespace WalletApi.Migrations
                 column: "AccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_ReceiverAccountId",
+                name: "IX_Transactions_CounterpartAccountId",
                 table: "Transactions",
-                column: "ReceiverAccountId");
+                column: "CounterpartAccountId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_SenderAccountId",
+                name: "IX_Transactions_RelatedTransactionId",
                 table: "Transactions",
-                column: "SenderAccountId");
+                column: "RelatedTransactionId");
         }
 
         /// <inheritdoc />

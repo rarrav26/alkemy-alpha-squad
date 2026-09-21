@@ -12,7 +12,7 @@ using WalletApi.Models;
 namespace WalletApi.Migrations
 {
     [DbContext(typeof(WalletContext))]
-    [Migration("20260917140646_InitialCreate")]
+    [Migration("20260921132948_InitialCreate.")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -280,23 +280,20 @@ namespace WalletApi.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("CounterpartAccountId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
-                    b.Property<int>("ReceiverAccountId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("SenderAccountId")
+                    b.Property<int?>("RelatedTransactionId")
                         .HasColumnType("int");
 
                     b.Property<string>("Type")
@@ -308,9 +305,9 @@ namespace WalletApi.Migrations
 
                     b.HasIndex("AccountId");
 
-                    b.HasIndex("ReceiverAccountId");
+                    b.HasIndex("CounterpartAccountId");
 
-                    b.HasIndex("SenderAccountId");
+                    b.HasIndex("RelatedTransactionId");
 
                     b.ToTable("Transactions", (string)null);
                 });
@@ -481,28 +478,24 @@ namespace WalletApi.Migrations
                     b.HasOne("WalletApi.Data.Entities.Account", "Account")
                         .WithMany("Transactions")
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("WalletApi.Data.Entities.Account", "ReceiverAccount")
+                    b.HasOne("WalletApi.Data.Entities.Account", "CounterpartAccount")
                         .WithMany()
-                        .HasForeignKey("ReceiverAccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("FK_Transactions_ReceiverAccount");
+                        .HasForeignKey("CounterpartAccountId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("WalletApi.Data.Entities.Account", "SenderAccount")
+                    b.HasOne("WalletApi.Data.Entities.Transaction", "RelatedTransaction")
                         .WithMany()
-                        .HasForeignKey("SenderAccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("FK_Transactions_SenderAccount");
+                        .HasForeignKey("RelatedTransactionId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Account");
 
-                    b.Navigation("ReceiverAccount");
+                    b.Navigation("CounterpartAccount");
 
-                    b.Navigation("SenderAccount");
+                    b.Navigation("RelatedTransaction");
                 });
 
             modelBuilder.Entity("WalletApi.Data.Entities.User", b =>

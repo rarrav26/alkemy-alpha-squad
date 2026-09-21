@@ -51,6 +51,7 @@ function TransactionHistory({
         }
 
         const data = await response.json();
+        console.log(data)
         const txs = limit
           ? data.transacciones.slice(0, limit)
           : data.transacciones;

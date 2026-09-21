@@ -28,9 +28,7 @@ public class TransactionsController : ControllerBase
         _logger = logger;
     }
 
-    /// <summary>
     /// Historial de movimientos del usuario autenticado (paginado y filtrado).
-    /// </summary>
     [HttpGet]
     public async Task<IActionResult> GetMyTransactions(
         [FromQuery] DateTime? fechaDesde,
