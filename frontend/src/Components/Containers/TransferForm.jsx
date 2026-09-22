@@ -1,10 +1,12 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   Box,
   TextField,
   Button,
   Alert,
   CircularProgress,
+  Card,
+  CardContent,
   Typography,
   InputAdornment,
   Paper,
@@ -140,54 +142,43 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
   };
 
   return (
-    <Box
+    <Card
+      elevation={3}
       sx={{
-        bgcolor: "rgba(13, 17, 24, 0.94)",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
-        borderRadius: "16px",
-        backdropFilter: "blur(20px)",
+        width: { xs: "100%", ms: "80%", md: "60%" },
+        borderRadius: 3,
         overflow: "hidden",
-        animation: "fadeInUp 0.4s ease both",
+        boxShadow: "0 10px 30px rgba(7, 79, 150, 0.12)",
       }}
     >
-      {/* Header */}
       <Box
         sx={{
-          background:
-            "linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(14, 165, 233, 0.08) 100%)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          bgcolor: "primary.main",
+          color: "white",
           p: 2.5,
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
+          textAlign: "center",
         }}
       >
         <Box
           sx={{
             display: "inline-flex",
-            p: 1,
-            borderRadius: "12px",
-            bgcolor: "rgba(56, 189, 248, 0.18)",
+            p: 1.2,
+            borderRadius: "50%",
+            bgcolor: "rgba(255, 255, 255, 0.15)",
+            mb: 0.5,
           }}
         >
-          <Send sx={{ fontSize: 22, color: "#38bdf8" }} />
+          <Send sx={{ fontSize: 28 }} />
         </Box>
-        <Box>
-          <Typography
-            variant="subtitle1"
-            component="h2"
-            sx={{ fontWeight: 700, color: "#f3f4f6" }}
-          >
-            Transferir Dinero
-          </Typography>
-          <Typography variant="caption" sx={{ color: "#9ca3af" }}>
-            Envía dinero ingresando Alias o CVU
-          </Typography>
-        </Box>
+        <Typography variant="h6" component="h2" fontWeight="bold">
+          Transferir Dinero
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.3 }}>
+          Envía dinero ingresando Alias o CVU
+        </Typography>
       </Box>
 
-      {/* Body */}
-      <Box sx={{ p: { xs: 2.5, sm: 3 } }}>
+      <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
         {success && (
           <Alert
             severity="success"
@@ -208,11 +199,7 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
               </strong>{" "}
               a <strong>{success.recipientName}</strong>.
             </Typography>
-            <Typography
-              variant="caption"
-              display="block"
-              sx={{ mt: 0.5, opacity: 0.85 }}
-            >
+            <Typography variant="caption" display="block" sx={{ mt: 0.5, opacity: 0.85 }}>
               Nuevo saldo: $
               {success.newBalance.toLocaleString("es-AR", {
                 minimumFractionDigits: 2,
@@ -255,9 +242,9 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
                 endAdornment: (
                   <InputAdornment position="end">
                     {lookingUp ? (
-                      <CircularProgress size={20} sx={{ color: "#38bdf8" }} />
+                      <CircularProgress size={20} />
                     ) : recipient ? (
-                      <CheckCircle sx={{ color: "#10b981" }} />
+                      <CheckCircle color="success" />
                     ) : null}
                   </InputAdornment>
                 ),
@@ -269,11 +256,7 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
 
           {/* Feedback de búsqueda de destinatario */}
           {lookupError && (
-            <Alert
-              severity="warning"
-              sx={{ mt: 1, mb: 1 }}
-              onClose={() => setLookupError("")}
-            >
+            <Alert severity="warning" sx={{ mt: 1, mb: 1 }} onClose={() => setLookupError("")}>
               {lookupError}
             </Alert>
           )}
@@ -285,26 +268,19 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
                 p: 1.5,
                 mb: 1.5,
                 borderRadius: 2,
-                bgcolor: "rgba(16, 185, 129, 0.12)",
-                border: "1px solid rgba(16, 185, 129, 0.25)",
+                bgcolor: "success.light",
+                color: "success.contrastText",
                 display: "flex",
                 alignItems: "center",
                 gap: 1.5,
               }}
             >
-              <Person sx={{ color: "#10b981" }} />
+              <Person />
               <Box>
-                <Typography
-                  variant="body2"
-                  sx={{ fontWeight: 700, color: "#10b981" }}
-                >
+                <Typography variant="body2" fontWeight="bold">
                   {recipient.recipientName}
                 </Typography>
-                <Typography
-                  variant="caption"
-                  display="block"
-                  sx={{ color: "#9ca3af" }}
-                >
+                <Typography variant="caption" display="block">
                   Alias: {recipient.alias} | CVU: {recipient.cvu}
                 </Typography>
               </Box>
@@ -326,11 +302,7 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
             slotProps={{
               input: {
                 startAdornment: (
-                  <InputAdornment position="start">
-                    <Typography sx={{ color: "#38bdf8", fontWeight: 600 }}>
-                      $
-                    </Typography>
-                  </InputAdornment>
+                  <InputAdornment position="start">$</InputAdornment>
                 ),
               },
               htmlInput: {
@@ -357,8 +329,10 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
             sx={{
               mt: 2,
               py: 1.3,
-              fontWeight: 700,
+              borderRadius: 2,
+              fontWeight: "bold",
               fontSize: "1rem",
+              boxShadow: "0 4px 12px rgba(7, 79, 150, 0.25)",
             }}
           >
             {loading ? (
@@ -368,9 +342,10 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
             )}
           </Button>
         </Box>
-      </Box>
-    </Box>
+      </CardContent>
+    </Card>
   );
 }
 
 export default TransferForm;
+

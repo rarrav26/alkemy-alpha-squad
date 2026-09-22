@@ -9,7 +9,7 @@ import {
   Tab,
 } from "@mui/material";
 import { LoginOutlined, PersonAddOutlined } from "@mui/icons-material";
-import AuraBackground from "../AuraBackground";
+import SpaceCanvas from "../SpaceCanvas";
 
 function AuthComponent() {
   const [currentUser, setCurrentUser] = useState(null);
@@ -23,13 +23,13 @@ function AuthComponent() {
 
   return (
     <>
-      {/* Background */}
-      <AuraBackground variant="animated" />
+      {/* Shared space background */}
+      <SpaceCanvas />
 
       <Box
         sx={{
           position: "relative",
-          zIndex: 2,
+          zIndex: 1,
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
@@ -38,13 +38,7 @@ function AuthComponent() {
         {/* Main Content */}
         <Container
           maxWidth={currentUser ? "lg" : "sm"}
-          sx={{
-            flexGrow: 1,
-            py: { xs: 4, sm: 6 },
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-          }}
+          sx={{ flexGrow: 1, py: { xs: 4, sm: 6 }, display: "flex", flexDirection: "column", justifyContent: "center" }}
         >
           {currentUser ? (
             <Typography
@@ -59,19 +53,19 @@ function AuthComponent() {
           ) : (
             <Box>
               {/* Header */}
-              <Box sx={{ textAlign: "center", mb: 3.5 }}>
+              <Box sx={{ textAlign: "center", mb: 4 }}>
                 {/* Logo badge */}
                 <Box
                   sx={{
                     display: "inline-flex",
                     alignItems: "center",
                     gap: 1,
-                    bgcolor: "rgba(56, 189, 248, 0.12)",
-                    border: "1px solid rgba(56, 189, 248, 0.3)",
+                    bgcolor: "rgba(16,185,129,0.15)",
+                    border: "1px solid rgba(16,185,129,0.35)",
                     borderRadius: "999px",
                     px: 2.5,
                     py: 0.8,
-                    mb: 2.5,
+                    mb: 3,
                   }}
                 >
                   <Box
@@ -79,15 +73,12 @@ function AuthComponent() {
                       width: 8,
                       height: 8,
                       borderRadius: "50%",
-                      bgcolor: "#38bdf8",
-                      boxShadow: "0 0 8px #38bdf8",
+                      bgcolor: "#10b981",
+                      boxShadow: "0 0 8px #10b981",
                       animation: "authPulse 2s infinite",
                       "@keyframes authPulse": {
-                        "0%, 100%": { boxShadow: "0 0 8px #38bdf8" },
-                        "50%": {
-                          boxShadow:
-                            "0 0 18px #38bdf8, 0 0 30px rgba(56,189,248,0.4)",
-                        },
+                        "0%, 100%": { boxShadow: "0 0 8px #10b981" },
+                        "50%": { boxShadow: "0 0 18px #10b981, 0 0 30px rgba(16,185,129,0.4)" },
                       },
                     }}
                   />
@@ -97,8 +88,8 @@ function AuthComponent() {
                       fontWeight: 700,
                       letterSpacing: "0.08em",
                       textTransform: "uppercase",
-                      color: "#7dd3fc",
-                      fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      color: "#34d399",
+                      fontFamily: "Inter, sans-serif",
                     }}
                   >
                     Tu billetera digital en pesos
@@ -111,13 +102,12 @@ function AuthComponent() {
                   sx={{
                     fontWeight: 900,
                     letterSpacing: "-0.03em",
-                    background:
-                      "linear-gradient(135deg, #7dd3fc 0%, #38bdf8 50%, #0ea5e9 100%)",
+                    background: "linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%)",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
                     mb: 1,
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "Inter, sans-serif",
                   }}
                 >
                   Digital·Ars
@@ -126,10 +116,10 @@ function AuthComponent() {
                 <Typography
                   variant="body1"
                   sx={{
-                    color: "rgba(255,255,255,0.6)",
+                    color: "rgba(255,255,255,0.55)",
                     maxWidth: 420,
                     mx: "auto",
-                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    fontFamily: "Inter, sans-serif",
                     lineHeight: 1.6,
                   }}
                 >
@@ -144,17 +134,17 @@ function AuthComponent() {
                     textColor="primary"
                     indicatorColor="primary"
                     sx={{
-                      bgcolor: "rgba(13, 17, 24, 0.9)",
+                      bgcolor: "rgba(255,255,255,0.05)",
                       backdropFilter: "blur(12px)",
                       borderRadius: 3,
                       p: 0.5,
-                      border: "1px solid rgba(255,255,255,0.08)",
+                      border: "1px solid rgba(255,255,255,0.1)",
                       "& .MuiTabs-indicator": {
                         height: "100%",
                         borderRadius: 2.5,
                         zIndex: 1,
                         bgcolor: "primary.main",
-                        boxShadow: "0 4px 16px rgba(56,189,248,0.4)",
+                        boxShadow: "0 4px 16px rgba(16,185,129,0.4)",
                       },
                     }}
                   >
@@ -166,13 +156,13 @@ function AuthComponent() {
                       sx={{
                         textTransform: "none",
                         fontWeight: "bold",
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontFamily: "Inter, sans-serif",
                         zIndex: 2,
                         minHeight: 44,
                         px: 3,
                         color: "rgba(255,255,255,0.6)",
                         transition: "color 0.2s",
-                        "&.Mui-selected": { color: "#030303 !important" },
+                        "&.Mui-selected": { color: "white !important" },
                       }}
                     />
                     <Tab
@@ -183,30 +173,30 @@ function AuthComponent() {
                       sx={{
                         textTransform: "none",
                         fontWeight: "bold",
-                        fontFamily: "'Plus Jakarta Sans', sans-serif",
+                        fontFamily: "Inter, sans-serif",
                         zIndex: 2,
                         minHeight: 44,
                         px: 3,
                         color: "rgba(255,255,255,0.6)",
                         transition: "color 0.2s",
-                        "&.Mui-selected": { color: "#030303 !important" },
+                        "&.Mui-selected": { color: "white !important" },
                       }}
                     />
                   </Tabs>
                 </Box>
               </Box>
 
-              {/* Form card - Less transparent with rich dark surface and crisp border */}
+              {/* Form card */}
               <Box
                 sx={{
                   maxWidth: authTab === "register" ? 660 : 440,
                   mx: "auto",
-                  bgcolor: "rgba(13, 17, 24, 0.92)",
-                  backdropFilter: "blur(24px)",
+                  bgcolor: "rgba(255,255,255,0.05)",
+                  backdropFilter: "blur(20px)",
                   border: "1px solid rgba(255,255,255,0.1)",
                   borderRadius: 4,
                   p: { xs: 3, sm: 4 },
-                  boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 30px rgba(56,189,248,0.06)",
+                  boxShadow: "0 24px 64px rgba(0,0,0,0.4)",
                   transition: "max-width 0.3s ease",
                 }}
               >

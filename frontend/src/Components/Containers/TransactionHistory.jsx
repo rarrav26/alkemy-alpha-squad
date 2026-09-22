@@ -1,4 +1,4 @@
-import { Box, Card, Typography, Button, CircularProgress } from "@mui/material";
+import { Box, Card, Typography, Grid, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import TransactionFiltersBar from "../TransactionFiltersBar";
@@ -75,78 +75,43 @@ function TransactionHistory({
     setPagina(1);
   };
 
-  if (loading)
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          py: 4,
-        }}
-      >
-        <CircularProgress size={28} sx={{ color: "#38bdf8" }} />
-      </Box>
-    );
-
-  if (error)
-    return (
-      <Box sx={{ textAlign: "center", py: 4 }}>
-        <Typography sx={{ color: "#ef4444" }}>Error: {error}</Typography>
-      </Box>
-    );
+  if (loading) return <p>Cargando transfeerencias...</p>;
+  if (error) return <p>Error: {error}</p>;
 
   return (
     <Box
       sx={{
-        minHeight: limit ? "auto" : "80vh",
+        minHeight: limit ? "auto" : "100vh",
         display: "flex",
         flexDirection: "column",
+        justifyContent: limit ? "flex-start" : "space-around",
         alignItems: "center",
-        animation: limit ? "none" : "fadeInUp 0.6s ease both",
+        textAlign: "center",
       }}
     >
-      {/* Header */}
-      <Box
+      <Typography
+        component="h2"
+        variant={limit ? "h6" : "h3"}
         sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          width: "100%",
-          px: limit ? 2.5 : 0,
-          pt: limit ? 2 : 0,
-          pb: limit ? 1 : 2,
+          my: limit ? { xs: 1, sm: 1.5 } : { xs: 3, sm: 4, md: 5 },
+          fontWeight: "bold",
+          fontSize: { xs: "1.5rem", sm: "2.5rem", md: "3rem" },
         }}
       >
-        <Typography
-          component="h2"
-          variant={limit ? "subtitle1" : "h4"}
-          sx={{
-            fontWeight: 700,
-            color: "#f3f4f6",
-          }}
+        {title}
+      </Typography>
+      {limit && (
+        <Button
+          component={Link}
+          to="/transactionHistory"
+          size="small"
+          sx={{ textTransform: "none", fontWeight: "bold" }}
         >
-          {title}
-        </Typography>
-        {limit && (
-          <Button
-            component={Link}
-            to="/transactionHistory"
-            size="small"
-            sx={{
-              textTransform: "none",
-              fontWeight: 600,
-              color: "#38bdf8",
-              "&:hover": { bgcolor: "rgba(56, 189, 248, 0.08)" },
-            }}
-          >
-            Ver todos →
-          </Button>
-        )}
-      </Box>
-
-      {/* Filters */}
+          Ver todos
+        </Button>
+      )}
       {showFilters && !limit && (
-        <Box sx={{ width: "100%", maxWidth: 800, mb: 3 }}>
+        <Box>
           <TransactionFiltersBar
             handleChange={handleFilterChange}
             filters={filters}
@@ -154,184 +119,125 @@ function TransactionHistory({
           />
         </Box>
       )}
-
-      {/* Empty state */}
       {transactions.length === 0 ? (
         <Box
           sx={{
+            width: "50vw",
+            height: "50vh",
+            margin: "2rem auto",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            alignItems: "center",
             textAlign: "center",
-            py: limit ? 3 : 8,
-            px: 3,
           }}
         >
-          <Typography
-            variant={limit ? "body2" : "h6"}
-            sx={{ color: "#9ca3af", fontWeight: 500 }}
-          >
+          <img
+            src="/Assets/Empty-history.jpg"
+            alt="Error message"
+            loading="lazy"
+            style={{ maxWidth: "40%", height: "auto" }}
+          />
+          <Typography variant="h4" component="h3" fontWeight="bold">
             No tienes transferencias registradas.
           </Typography>
-          {!limit && (
-            <Button
-              component={Link}
-              to="/dashboard"
-              variant="outlined"
-              sx={{ mt: 2 }}
-            >
-              Hacé un depósito
-            </Button>
-          )}
+          <Typography variant="body1" component="p" fontWeight="bold">
+            No tienes transferencias registradas.
+          </Typography>
+          <Link
+            to="/dashboard"
+            style={{
+              fontWeight: "bold",
+              textTransform: "none",
+              p: 0,
+              minWidth: 0,
+              textDecoration: "none",
+            }}
+          >
+            Hacé un deposito
+          </Link>
         </Box>
       ) : (
         <>
-          {/* Transaction list */}
-          <Box
+          <Grid
+            container
+            spacing={2}
             sx={{
-              width: "100%",
-              maxWidth: limit ? "100%" : 800,
-              display: "flex",
+              width: { xs: "95vw", sm: "80vw", md: "50vw" },
+              margin: "0 auto",
               flexDirection: "column",
-              gap: limit ? 0 : 1.5,
-              px: limit ? 0 : 0,
             }}
           >
-            {transactions.map((tx, index) => {
+            {transactions.map((tx) => {
               const isCredit = tx.tipo === "Crédito";
               const formattedDate = new Date(tx.date).toLocaleString();
 
               return (
-                <Box
-                  key={tx.id}
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                    px: limit ? 2.5 : 2,
-                    py: 1.5,
-                    borderRadius: limit ? 0 : "12px",
-                    bgcolor: limit
-                      ? "transparent"
-                      : "rgba(255, 255, 255, 0.02)",
-                    border: limit
-                      ? "none"
-                      : "1px solid rgba(255, 255, 255, 0.06)",
-                    borderBottom: limit
-                      ? "1px solid rgba(255, 255, 255, 0.04)"
-                      : undefined,
-                    backdropFilter: limit ? "none" : "blur(12px)",
-                    transition: "all 0.2s ease",
-                    animation: limit
-                      ? "none"
-                      : `fadeInUp 0.4s ease ${index * 0.05}s both`,
-                    "&:hover": {
-                      bgcolor: "rgba(255, 255, 255, 0.04)",
-                    },
-                    "&:last-child": {
-                      borderBottom: "none",
-                    },
-                  }}
-                >
-                  {/* Icon */}
-                  <Box
+                <Grid item xs={12} key={tx.id}>
+                  <Card
                     sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "10px",
+                      width: "100%",
+                      p: 2,
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      bgcolor: isCredit
-                        ? "rgba(16, 185, 129, 0.12)"
-                        : "rgba(239, 68, 68, 0.12)",
-                      color: isCredit ? "#10b981" : "#ef4444",
-                      fontWeight: 700,
-                      fontSize: "0.85rem",
-                      flexShrink: 0,
+                      gap: 2,
                     }}
                   >
-                    {isCredit ? "↓" : "↑"}
-                  </Box>
-
-                  {/* Details */}
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography
+                    <Box
                       sx={{
-                        fontWeight: 600,
-                        color: "#f3f4f6",
-                        fontSize: "0.9rem",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
+                        width: 40,
+                        height: 40,
+                        borderRadius: "50%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        bgcolor: "grey.200",
+                        fontWeight: "bold",
+                        flexShrink: 0,
                       }}
                     >
-                      {tx.description || tx.tipo}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      sx={{ color: "#9ca3af" }}
-                    >
-                      {formattedDate}
-                    </Typography>
-                  </Box>
+                      {tx.tipo.charAt(0)}
+                    </Box>
 
-                  {/* Amount */}
-                  <Typography
-                    sx={{
-                      fontWeight: 700,
-                      color: isCredit ? "#10b981" : "#ef4444",
-                      whiteSpace: "nowrap",
-                      fontSize: "0.95rem",
-                    }}
-                  >
-                    {isCredit
-                      ? `+$${tx.amount.toFixed(2)}`
-                      : `-$${tx.amount.toFixed(2)}`}
-                  </Typography>
-                </Box>
+                    <Box sx={{ flex: 1, textAlign: "left" }}>
+                      <Typography fontWeight="bold">
+                        {tx.description || tx.tipo}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {formattedDate}
+                      </Typography>
+                    </Box>
+
+                    <Typography
+                      fontWeight="bold"
+                      color={isCredit ? "success.main" : "error.main"}
+                      sx={{ whiteSpace: "nowrap" }}
+                    >
+                      {isCredit
+                        ? `+$${tx.amount.toFixed(2)}`
+                        : `-$${tx.amount.toFixed(2)}`}
+                    </Typography>
+                  </Card>
+                </Grid>
               );
             })}
-          </Box>
-
-          {/* Pagination */}
+          </Grid>
           {!limit && (
-            <Box
-              sx={{
-                display: "flex",
-                gap: 2,
-                mt: 4,
-                mb: 4,
-                alignItems: "center",
-              }}
-            >
+            <Box sx={{ display: "flex", gap: 2, mt: 4, alignItems: "center" }}>
               <Button
-                variant="outlined"
+                variant="contained"
                 disabled={pagina === 1}
                 onClick={() => setPagina((prev) => prev - 1)}
-                sx={{
-                  borderColor: "rgba(255,255,255,0.1)",
-                  color: "#f3f4f6",
-                  "&:hover": {
-                    borderColor: "#38bdf8",
-                    bgcolor: "rgba(56, 189, 248, 0.08)",
-                  },
-                }}
               >
                 Anterior
               </Button>
-              <Typography sx={{ color: "#9ca3af", fontSize: "0.9rem" }}>
+              <Typography>
                 Página {pagina} de {totalPaginas || 1}
               </Typography>
               <Button
-                variant="outlined"
+                variant="contained"
                 disabled={pagina >= totalPaginas}
                 onClick={() => setPagina((prev) => prev + 1)}
-                sx={{
-                  borderColor: "rgba(255,255,255,0.1)",
-                  color: "#f3f4f6",
-                  "&:hover": {
-                    borderColor: "#38bdf8",
-                    bgcolor: "rgba(56, 189, 248, 0.08)",
-                  },
-                }}
               >
                 Siguiente
               </Button>

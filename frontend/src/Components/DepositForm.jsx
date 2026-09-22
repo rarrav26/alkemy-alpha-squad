@@ -5,10 +5,12 @@ import {
   Button,
   Alert,
   CircularProgress,
+  Card,
+  CardContent,
   Typography,
   InputAdornment,
 } from "@mui/material";
-import { ArrowDownward } from "@mui/icons-material";
+import { AccountBalanceWallet } from "@mui/icons-material";
 import accountService from "../services/accountService";
 
 function DepositForm({ onDepositSuccess }) {
@@ -76,67 +78,48 @@ function DepositForm({ onDepositSuccess }) {
   };
 
   return (
-    <Box
+    <Card
+      elevation={3}
       sx={{
-        bgcolor: "rgba(13, 17, 24, 0.94)",
-        border: "1px solid rgba(255, 255, 255, 0.08)",
-        borderRadius: "16px",
-        backdropFilter: "blur(20px)",
+        width: { xs: "100%", ms: "80%", md: "60%" },
+        borderRadius: 3,
         overflow: "hidden",
-        animation: "fadeInUp 0.4s ease both",
+        boxShadow: "0 10px 30px rgba(7, 79, 150, 0.12)",
       }}
     >
-      {/* Header */}
       <Box
         sx={{
-          background:
-            "linear-gradient(135deg, rgba(56, 189, 248, 0.15) 0%, rgba(14, 165, 233, 0.08) 100%)",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          bgcolor: "primary.main",
+          color: "white",
           p: 2.5,
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
+          textAlign: "center",
         }}
       >
         <Box
           sx={{
             display: "inline-flex",
-            p: 1,
-            borderRadius: "12px",
-            bgcolor: "rgba(56, 189, 248, 0.18)",
+            p: 1.2,
+            borderRadius: "50%",
+            bgcolor: "rgba(255, 255, 255, 0.15)",
+            mb: 0.5,
           }}
         >
-          <ArrowDownward sx={{ fontSize: 22, color: "#38bdf8" }} />
+          <AccountBalanceWallet sx={{ fontSize: 28 }} />
         </Box>
-        <Box>
-          <Typography
-            variant="subtitle1"
-            component="h2"
-            sx={{ fontWeight: 700, color: "#f3f4f6" }}
-          >
-            Ingresar Dinero
-          </Typography>
-          <Typography
-            variant="caption"
-            sx={{ color: "#9ca3af" }}
-          >
-            Depósito simulado a tu cuenta
-          </Typography>
-        </Box>
+        <Typography variant="h6" component="h2" fontWeight="bold">
+          Ingresar Dinero
+        </Typography>
+        <Typography variant="body2" sx={{ opacity: 0.9, mt: 0.3 }}>
+          Depósito simulado a tu cuenta
+        </Typography>
       </Box>
 
-      {/* Body */}
-      <Box sx={{ p: { xs: 2.5, sm: 3 } }}>
+      <CardContent sx={{ p: { xs: 2.5, sm: 3 } }}>
         {success && (
-          <Alert
-            severity="success"
-            sx={{ mb: 2 }}
-            onClose={() => setSuccess(null)}
-          >
+          <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
             {success.message} — Nuevo saldo:{" "}
             <strong>
-              $
-              {success.newBalance.toLocaleString("es-AR", {
+              ${success.newBalance.toLocaleString("es-AR", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -166,11 +149,7 @@ function DepositForm({ onDepositSuccess }) {
             slotProps={{
               input: {
                 startAdornment: (
-                  <InputAdornment position="start">
-                    <Typography sx={{ color: "#38bdf8", fontWeight: 600 }}>
-                      $
-                    </Typography>
-                  </InputAdornment>
+                  <InputAdornment position="start">$</InputAdornment>
                 ),
               },
               htmlInput: {
@@ -190,8 +169,10 @@ function DepositForm({ onDepositSuccess }) {
             sx={{
               mt: 2,
               py: 1.3,
-              fontWeight: 700,
+              borderRadius: 2,
+              fontWeight: "bold",
               fontSize: "1rem",
+              boxShadow: "0 4px 12px rgba(7, 79, 150, 0.25)",
             }}
           >
             {loading ? (
@@ -201,8 +182,8 @@ function DepositForm({ onDepositSuccess }) {
             )}
           </Button>
         </Box>
-      </Box>
-    </Box>
+      </CardContent>
+    </Card>
   );
 }
 
