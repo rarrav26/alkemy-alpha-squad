@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   AppBar,
   Toolbar,
@@ -19,14 +19,20 @@ import {
   Dashboard as DashboardIcon,
   Logout as LogoutIcon,
   KeyboardArrowDown as ArrowDownIcon,
+  PeopleAlt as PeopleIcon,
 } from "@mui/icons-material";
 import { AccountBalanceWallet } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../Contexts/AuthContext";
 
 function Navbar() {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
+  const { userRole } = useContext(AuthContext);
+
+  const role = userRole || localStorage.getItem("userRole");
+  const isAdmin = role === "Administrador" || (Array.isArray(role) && role.includes("Administrador"));
 
   // Handlers to open and close the menu
   const handleProfileClick = (event) => {
@@ -58,6 +64,7 @@ function Navbar() {
         console.log(data.message);
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
+        localStorage.removeItem("userRole");
         window.location.href = "/auth";
       } else {
         const errorData = await response.json();
@@ -129,6 +136,24 @@ function Navbar() {
             />
           </ListItemButton>
         </Box>
+        {isAdmin && (
+          <Box>
+            <ListItemButton
+              component="a"
+              href="/users"
+              sx={{
+                borderRadius: 2,
+                color: "#9ca3af",
+                "&:hover": { color: "#f3f4f6", bgcolor: "rgba(255,255,255,0.04)" },
+              }}
+            >
+              <ListItemText
+                primary="Usuarios"
+                primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9rem" }}
+              />
+            </ListItemButton>
+          </Box>
+        )}
 
         <Box>
           <Button
@@ -226,6 +251,21 @@ function Navbar() {
                 }}
               />
             </MenuItem>
+
+            {isAdmin && (
+              <MenuItem onClick={() => handleNavigate("users")}>
+                <ListItemIcon>
+                  <PeopleIcon fontSize="small" sx={{ color: "#38bdf8" }} />
+                </ListItemIcon>
+                <ListItemText
+                  primary="Gestión de Usuarios"
+                  primaryTypographyProps={{
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                  }}
+                />
+              </MenuItem>
+            )}
 
             <MenuItem onClick={() => handleNavigate("Profile Page")}>
               <ListItemIcon>

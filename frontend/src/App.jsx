@@ -10,8 +10,10 @@ import {
 import AuthComponent from "./Components/Containers/Auth";
 import Dashboard from "./Components/Containers/Dashboard";
 import TransactionHistory from "./Components/Containers/TransactionHistory";
+import UsersList from "./Components/Containers/UsersList";
 import RootLayout from "./Components/Containers/RootLayout";
 import LandingPage from "./Components/Containers/LandingPage";
+import AdminRoute from "./Components/AdminRoute";
 import AuthContext from "./Contexts/AuthContext";
 
 
@@ -47,6 +49,12 @@ const router = createBrowserRouter([
         children: [
           { path: "dashboard", element: <Dashboard /> },
           { path: "transactionHistory", element: <TransactionHistory /> },
+          {
+            element: <AdminRoute />,
+            children: [
+              { path: "users", element: <UsersList /> },
+            ],
+          },
         ],
       },
     ],
@@ -64,12 +72,17 @@ function App() {
   const [userToken, setUserToken] = useState(() => {
     return localStorage.getItem("token") || null;
   });
+  const [userRole, setUserRole] = useState(() => {
+    return localStorage.getItem("userRole") || null;
+  });
 
   const value = {
     userId,
     setUserId,
     userToken,
-    setUserToken
+    setUserToken,
+    userRole,
+    setUserRole,
   };
   return (
     <AuthContext.Provider value={value}>

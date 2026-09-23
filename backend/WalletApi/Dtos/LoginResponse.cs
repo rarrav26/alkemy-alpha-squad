@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace WalletApi.Dtos
 {
@@ -9,5 +9,6 @@ namespace WalletApi.Dtos
         public string Message { get; set; }
         public string Token { get; set; } = string.Empty;
         public string expiresAt { get; set; } = string.Empty;
+        public IList<string> Roles { get; set; } = new List<string>();
     }
 }

@@ -85,7 +85,8 @@ public class AuthService : IAuthService
             Email = user.Email ?? "",
             Message = "Login exitoso",
             Token = token,
-            expiresAt = DateTime.UtcNow.AddMinutes(60).ToString("o")
+            expiresAt = DateTime.UtcNow.AddMinutes(60).ToString("o"),
+            Roles = roles.ToList()
         };
     }
 

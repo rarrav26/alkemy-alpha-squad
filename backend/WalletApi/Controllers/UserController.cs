@@ -7,6 +7,7 @@ using WalletApi.Dtos;
 using WalletApi.Data.Entities;
 namespace WalletApi.Controllers
 {
+    [Authorize(Roles = "Administrador")]
     [Route("api/[controller]")]
     [ApiController]
     public class UserController(IUserRepository userRepository) : ControllerBase
@@ -14,10 +15,15 @@ namespace WalletApi.Controllers
         private readonly IUserRepository _userRepository = userRepository;
 
         [HttpGet]
-        public ActionResult<IReadOnlyList<User>> ObtenerTodas()
+        public async Task<ActionResult<PagedUsersResponseDto>> ObtenerUsuarios(
+            [FromQuery] int pagina = 1,
+            [FromQuery] int porPagina = 10)
         {
-            var users = _userRepository.ObtenerTodas();
-            return Ok(users);
+            if (pagina < 1) pagina = 1;
+            if (porPagina < 1 || porPagina > 100) porPagina = 10;
+
+            var resultado = await _userRepository.ObtenerUsuariosPaginadosAsync(pagina, porPagina);
+            return Ok(resultado);
         }
 
         [HttpGet("{id:int}")]

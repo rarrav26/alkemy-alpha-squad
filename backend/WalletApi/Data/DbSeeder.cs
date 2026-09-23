@@ -38,6 +38,12 @@ public static class DbSeeder
         var adminEmail = configuration["AdminUser:Email"];
         var adminPassword = configuration["AdminUser:Password"];
 
+        if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
+        {
+            logger.LogWarning("No se configuraron credenciales para AdminUser en IConfiguration. Se omite la creación del administrador.");
+            return;
+        }
+
         // 3. Ensure admin user exists
         var admin = await userManager.FindByEmailAsync(adminEmail);
         if (admin == null)
@@ -46,12 +52,15 @@ public static class DbSeeder
             {
                 UserName = adminEmail,
                 Email = adminEmail,
+                NormalizedUserName = adminEmail.ToUpperInvariant(),
+                NormalizedEmail = adminEmail.ToUpperInvariant(),
                 EmailConfirmed = true,
                 FirstName = "Admin",
                 LastName = "User",
                 DocumentTypeId = 1,
                 DocumentNumber = "00000000",
-                IsActive = true
+                IsActive = true,
+                SecurityStamp = Guid.NewGuid().ToString()
             };
 
             var createResult = await userManager.CreateAsync(adminUser, adminPassword);
@@ -68,6 +77,24 @@ public static class DbSeeder
             }
 
             admin = adminUser;
+        }
+        else
+        {
+            admin.IsActive = true;
+            admin.EmailConfirmed = true;
+            admin.NormalizedEmail = adminEmail.ToUpperInvariant();
+            admin.NormalizedUserName = adminEmail.ToUpperInvariant();
+            admin.SecurityStamp ??= Guid.NewGuid().ToString();
+            admin.PasswordHash = userManager.PasswordHasher.HashPassword(admin, adminPassword);
+            
+            await userManager.UpdateAsync(admin);
+
+            if (!await userManager.IsInRoleAsync(admin, "Administrador"))
+            {
+                await userManager.AddToRoleAsync(admin, "Administrador");
+            }
+
+            logger.LogInformation("Usuario administrador actualizado con éxito para {Email}.", adminEmail);
         }
 
         // 4. Ensure admin has an active bank account (delegated to IAccountService)

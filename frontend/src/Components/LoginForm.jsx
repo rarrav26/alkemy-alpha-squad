@@ -22,7 +22,7 @@ function LoginForm({ onToggleRegister }) {
   const [showPassword, setShowPassword] = useState(false);
   const [errorConfig, setErrorConfig] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
-  const { setUserId, setUserToken } = useContext(AuthContext);
+  const { setUserId, setUserToken, setUserRole } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -37,17 +37,20 @@ function LoginForm({ onToggleRegister }) {
       });
 
       const data = response.data;
+      const role = (data?.roles && data.roles.length > 0) ? data.roles[0] : (data?.role || "Usuario");
+
       if (data?.token) {
         localStorage.setItem("token", data.token);
       }
       if (data?.userId) {
         localStorage.setItem("userId", data.userId);
-        localStorage.setItem("token", data.token);
       }
+      localStorage.setItem("userRole", role);
+
       console.log("Login exitoso:", data.message);
-      localStorage.setItem("token", data.token);
       setUserId(data.userId);
       setUserToken(data.token);
+      if (setUserRole) setUserRole(role);
 
       navigate("/dashboard", { replace: true });
     } catch (error) {
