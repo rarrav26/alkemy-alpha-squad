@@ -4,6 +4,8 @@ import {
   Card,
   Typography,
   Button,
+  IconButton,
+  Tooltip,
   CircularProgress,
   Table,
   TableBody,
@@ -21,7 +23,9 @@ import {
   CheckCircle as ActiveIcon,
   Cancel as InactiveIcon,
   Refresh as RefreshIcon,
+  VisibilityOutlined as ViewDetailIcon,
 } from "@mui/icons-material";
+import UserDetailModal from "../UserDetailModal";
 
 function UsersList() {
   const [usuarios, setUsuarios] = useState([]);
@@ -31,6 +35,20 @@ function UsersList() {
   const [porPagina] = useState(10);
   const [totalPaginas, setTotalPaginas] = useState(1);
   const [totalRegistros, setTotalRegistros] = useState(0);
+
+  // Modal de detalle de usuario
+  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  const handleOpenDetail = (userId) => {
+    setSelectedUserId(userId);
+    setModalOpen(true);
+  };
+
+  const handleCloseDetail = () => {
+    setModalOpen(false);
+    setSelectedUserId(null);
+  };
 
   const fetchUsuarios = async (pageToFetch = pagina) => {
     try {
@@ -195,6 +213,7 @@ function UsersList() {
                     <TableCell>FECHA REGISTRO</TableCell>
                     <TableCell align="center">ROL</TableCell>
                     <TableCell align="center">ESTADO</TableCell>
+                    <TableCell align="center">ACCIONES</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -314,6 +333,31 @@ function UsersList() {
                             }}
                           />
                         </TableCell>
+
+                        {/* Acciones */}
+                        <TableCell align="center">
+                          <Tooltip title="Ver detalle del usuario" arrow placement="top">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleOpenDetail(user.id)}
+                              sx={{
+                                color: "#38bdf8",
+                                bgcolor: "rgba(56, 189, 248, 0.08)",
+                                border: "1px solid rgba(56, 189, 248, 0.2)",
+                                borderRadius: "8px",
+                                p: 0.9,
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  bgcolor: "rgba(56, 189, 248, 0.2)",
+                                  borderColor: "#38bdf8",
+                                  transform: "scale(1.08)",
+                                },
+                              }}
+                            >
+                              <ViewDetailIcon sx={{ fontSize: 18 }} />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -382,6 +426,13 @@ function UsersList() {
           </>
         )}
       </Card>
+
+      {/* Modal de Detalle de Usuario */}
+      <UserDetailModal
+        open={modalOpen}
+        onClose={handleCloseDetail}
+        userId={selectedUserId}
+      />
     </Box>
   );
 }

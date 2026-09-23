@@ -59,6 +59,47 @@ namespace WalletApi.Repositories
         {
             throw new NotImplementedException();
         }
+
+        public async Task<UserDetailResponseDto?> ObtenerDetallePorIdAsync(int id)
+        {
+            var user = await _context.Users
+                .Include(u => u.DocumentType)
+                .Include(u => u.Accounts)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+                return null;
+
+            var role = await (from ur in _context.UserRoles
+                              join r in _context.Roles on ur.RoleId equals r.Id
+                              where ur.UserId == user.Id
+                              select r.Name).FirstOrDefaultAsync() ?? "Usuario";
+
+            var account = user.Accounts.FirstOrDefault();
+
+            return new UserDetailResponseDto
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email ?? string.Empty,
+                DocumentType = user.DocumentType != null ? user.DocumentType.Code : string.Empty,
+                DocumentNumber = user.DocumentNumber,
+                IsActive = user.IsActive,
+                CreatedAt = user.CreatedAt,
+                Role = role,
+                Account = account != null ? new AccountResponseDto
+                {
+                    Id = account.Id,
+                    Cvu = account.Cvu,
+                    Alias = account.Alias,
+                    Balance = account.Balance,
+                    Currency = account.Currency,
+                    CreatedAt = account.CreatedAt
+                } : null
+            };
+        }
         public User Crear(User user)
         {
             throw new NotImplementedException();

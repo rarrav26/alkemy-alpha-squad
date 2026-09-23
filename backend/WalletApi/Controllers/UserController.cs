@@ -27,12 +27,22 @@ namespace WalletApi.Controllers
         }
 
         [HttpGet("{id:int}")]
-        public ActionResult<User> ObtenerPorId(int id)
+        [ProducesResponseType(typeof(UserDetailResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<UserDetailResponseDto>> ObtenerPorId(int id)
         {
-            var user = _userRepository.ObtenerPorId(id);
+            if (id <= 0)
+            {
+                return BadRequest(new { message = "El identificador de usuario debe ser mayor a cero." });
+            }
+
+            var user = await _userRepository.ObtenerDetallePorIdAsync(id);
 
             if (user == null)
-                return NotFound();
+            {
+                return NotFound(new { message = $"No se encontró el usuario con ID {id}." });
+            }
 
             return Ok(user);
         }

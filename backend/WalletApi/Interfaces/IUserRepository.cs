@@ -9,6 +9,7 @@ namespace WalletApi.Interfaces
         IReadOnlyList<User> ObtenerTodas();
         Task<PagedUsersResponseDto> ObtenerUsuariosPaginadosAsync(int pagina, int porPagina);
         User? ObtenerPorId(int id);
+        Task<UserDetailResponseDto?> ObtenerDetallePorIdAsync(int id);
         User Crear(User user);
         bool Actualizar(User user);
         bool Eliminar(User user);
