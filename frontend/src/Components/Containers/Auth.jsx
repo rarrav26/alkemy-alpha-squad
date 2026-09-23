@@ -1,6 +1,7 @@
 import { useState } from "react";
 import RegisterForm from "../RegisterForm";
 import LoginForm from "../LoginForm";
+import FirstLoginForm from "../FirstLoginForm";
 import {
   Container,
   Typography,
@@ -139,7 +140,7 @@ function AuthComponent() {
                 {/* Tabs Switcher */}
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
                   <Tabs
-                    value={authTab}
+                    value={authTab === "first-login" ? false : authTab}
                     onChange={(e, val) => setAuthTab(val)}
                     textColor="primary"
                     indicatorColor="primary"
@@ -210,10 +211,17 @@ function AuthComponent() {
                   transition: "max-width 0.3s ease",
                 }}
               >
-                {authTab === "login" ? (
-                  <LoginForm onToggleRegister={() => setAuthTab("register")} />
-                ) : (
+                {authTab === "login" && (
+                  <LoginForm
+                    onToggleRegister={() => setAuthTab("register")}
+                    onToggleFirstLogin={() => setAuthTab("first-login")}
+                  />
+                )}
+                {authTab === "register" && (
                   <RegisterForm onToggleLogin={() => setAuthTab("login")} />
+                )}
+                {authTab === "first-login" && (
+                  <FirstLoginForm onToggleLogin={() => setAuthTab("login")} />
                 )}
               </Box>
             </Box>

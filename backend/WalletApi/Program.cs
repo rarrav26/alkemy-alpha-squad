@@ -161,6 +161,18 @@ using (var scope = app.Services.CreateScope())
     var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
+        var context = services.GetRequiredService<WalletContext>();
+        await context.Database.ExecuteSqlRawAsync(@"
+            IF NOT EXISTS (
+                SELECT 1 FROM sys.columns 
+                WHERE object_id = OBJECT_ID(N'[dbo].[AspNetUsers]') 
+                AND name = 'DebeCambiarPassword'
+            )
+            BEGIN
+                ALTER TABLE [dbo].[AspNetUsers] ADD [DebeCambiarPassword] bit NOT NULL CONSTRAINT DF_AspNetUsers_DebeCambiarPassword DEFAULT 0;
+            END
+        ");
+
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole<int>>>();
         var userManager = services.GetRequiredService<UserManager<User>>();
         var configuration = services.GetRequiredService<IConfiguration>();

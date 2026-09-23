@@ -24,13 +24,16 @@ import {
   Cancel as InactiveIcon,
   Refresh as RefreshIcon,
   VisibilityOutlined as ViewDetailIcon,
+  PersonAddAlt1Outlined as PersonAddIcon,
 } from "@mui/icons-material";
 import UserDetailModal from "../UserDetailModal";
+import CreateUserModal from "../CreateUserModal";
 
 function UsersList() {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
   const [pagina, setPagina] = useState(1);
   const [porPagina] = useState(10);
   const [totalPaginas, setTotalPaginas] = useState(1);
@@ -40,6 +43,9 @@ function UsersList() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  // Modal de creación de usuario
+  const [createModalOpen, setCreateModalOpen] = useState(false);
+
   const handleOpenDetail = (userId) => {
     setSelectedUserId(userId);
     setModalOpen(true);
@@ -48,6 +54,15 @@ function UsersList() {
   const handleCloseDetail = () => {
     setModalOpen(false);
     setSelectedUserId(null);
+  };
+
+  const handleUserCreated = (createdUser) => {
+    setSuccessMessage(`Usuario ${createdUser.firstName} ${createdUser.lastName} creado con éxito.`);
+    fetchUsuarios(1);
+    setPagina(1);
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 5000);
   };
 
   const fetchUsuarios = async (pageToFetch = pagina) => {
@@ -135,25 +150,55 @@ function UsersList() {
           </Typography>
         </Box>
 
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={() => fetchUsuarios(pagina)}
-          disabled={loading}
-          sx={{
-            borderColor: "rgba(255,255,255,0.1)",
-            color: "#f3f4f6",
-            textTransform: "none",
-            borderRadius: "10px",
-            "&:hover": {
-              borderColor: "#38bdf8",
-              bgcolor: "rgba(56, 189, 248, 0.08)",
-            },
-          }}
-        >
-          Actualizar
-        </Button>
+        <Box sx={{ display: "flex", gap: 1.5, alignItems: "center", flexWrap: "wrap" }}>
+          <Button
+            variant="contained"
+            startIcon={<PersonAddIcon />}
+            onClick={() => setCreateModalOpen(true)}
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              borderRadius: "10px",
+              px: 2.2,
+              py: 0.9,
+              bgcolor: "#38bdf8",
+              color: "#0a0a0f",
+              "&:hover": {
+                bgcolor: "#0284c7",
+              },
+            }}
+          >
+            Nuevo Usuario
+          </Button>
+
+          <Button
+            variant="outlined"
+            startIcon={<RefreshIcon />}
+            onClick={() => fetchUsuarios(pagina)}
+            disabled={loading}
+            sx={{
+              borderColor: "rgba(255,255,255,0.1)",
+              color: "#f3f4f6",
+              textTransform: "none",
+              borderRadius: "10px",
+              py: 0.9,
+              "&:hover": {
+                borderColor: "#38bdf8",
+                bgcolor: "rgba(56, 189, 248, 0.08)",
+              },
+            }}
+          >
+            Actualizar
+          </Button>
+        </Box>
       </Box>
+
+      {/* Success Alert */}
+      {successMessage && (
+        <Alert severity="success" sx={{ borderRadius: "12px" }}>
+          {successMessage}
+        </Alert>
+      )}
 
       {/* Error Alert */}
       {error && (
@@ -432,6 +477,13 @@ function UsersList() {
         open={modalOpen}
         onClose={handleCloseDetail}
         userId={selectedUserId}
+      />
+
+      {/* Modal de Creación de Usuario */}
+      <CreateUserModal
+        open={createModalOpen}
+        onClose={() => setCreateModalOpen(false)}
+        onSuccess={handleUserCreated}
       />
     </Box>
   );

@@ -39,3 +39,27 @@ public class UserDetailResponseDto
     public AccountResponseDto? Account { get; set; }
 }
 
+public class CreateUserAdminRequestDto
+{
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El nombre es obligatorio.")]
+    [System.ComponentModel.DataAnnotations.StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
+    public string FirstName { get; set; } = string.Empty;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El apellido es obligatorio.")]
+    [System.ComponentModel.DataAnnotations.StringLength(50, MinimumLength = 2, ErrorMessage = "El apellido debe tener entre 2 y 50 caracteres.")]
+    public string LastName { get; set; } = string.Empty;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El tipo de documento es obligatorio.")]
+    [System.ComponentModel.DataAnnotations.Range(1, int.MaxValue, ErrorMessage = "Tipo de documento inválido.")]
+    public int DocumentTypeId { get; set; }
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El número de documento es obligatorio.")]
+    [System.ComponentModel.DataAnnotations.StringLength(30, MinimumLength = 4, ErrorMessage = "El número de documento debe tener entre 4 y 30 caracteres.")]
+    public string DocumentNumber { get; set; } = string.Empty;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El correo electrónico es obligatorio.")]
+    [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Formato de correo electrónico inválido.")]
+    [System.ComponentModel.DataAnnotations.StringLength(250, ErrorMessage = "El correo no puede exceder 250 caracteres.")]
+    public string Email { get; set; } = string.Empty;
+}
+

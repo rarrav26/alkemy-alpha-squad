@@ -10,6 +10,7 @@ namespace WalletApi.Interfaces
         Task<PagedUsersResponseDto> ObtenerUsuariosPaginadosAsync(int pagina, int porPagina);
         User? ObtenerPorId(int id);
         Task<UserDetailResponseDto?> ObtenerDetallePorIdAsync(int id);
+        Task<UserDetailResponseDto> CrearUsuarioPorAdminAsync(CreateUserAdminRequestDto request);
         User Crear(User user);
         bool Actualizar(User user);
         bool Eliminar(User user);

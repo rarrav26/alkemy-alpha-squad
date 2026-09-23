@@ -16,7 +16,7 @@ import api from "../services/api";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../Contexts/AuthContext";
 
-function LoginForm({ onToggleRegister }) {
+function LoginForm({ onToggleRegister, onToggleFirstLogin }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -225,7 +225,7 @@ function LoginForm({ onToggleRegister }) {
           )}
         </Button>
         <Divider sx={{ my: 2, borderColor: "rgba(255,255,255,0.06)" }} />
-        <Box sx={{ textAlign: "center", mt: 1 }}>
+        <Box sx={{ textAlign: "center", mt: 1, display: "flex", flexDirection: "column", gap: 1 }}>
           <Typography variant="body2" sx={{ color: "#9ca3af" }}>
             ¿Aún no tienes una cuenta?{" "}
             <Button
@@ -242,6 +242,27 @@ function LoginForm({ onToggleRegister }) {
               Regístrate aquí
             </Button>
           </Typography>
+
+          {onToggleFirstLogin && (
+            <Typography variant="body2" sx={{ color: "#9ca3af" }}>
+              ¿Fuiste dado de alta por un administrador?{" "}
+              <Button
+                variant="text"
+                color="secondary"
+                onClick={onToggleFirstLogin}
+                sx={{
+                  fontWeight: 700,
+                  textTransform: "none",
+                  p: 0,
+                  minWidth: 0,
+                  color: "#38bdf8",
+                  "&:hover": { textDecoration: "underline" },
+                }}
+              >
+                Primer ingreso
+              </Button>
+            </Typography>
+          )}
         </Box>
       </Box>
     </Box>

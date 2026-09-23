@@ -47,6 +47,41 @@ namespace WalletApi.Controllers
             return Ok(user);
         }
 
+        [HttpPost]
+        [ProducesResponseType(typeof(UserDetailResponseDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<UserDetailResponseDto>> CrearUsuario([FromBody] CreateUserAdminRequestDto request)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var usuarioCreado = await _userRepository.CrearUsuarioPorAdminAsync(request);
+
+                return CreatedAtAction(
+                    nameof(ObtenerPorId),
+                    new { id = usuarioCreado.Id },
+                    usuarioCreado
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error inesperado al crear el usuario." });
+            }
+        }
+
         [HttpPost("{id:int}")]
         public ActionResult<User> Actualizar(int id, GuardarUserRequest request)
         {
