@@ -5,19 +5,26 @@ using Microsoft.AspNetCore.Authorization;
 using WalletApi.Models;
 using WalletApi.Dtos;
 using WalletApi.Data.Entities;
+using Microsoft.AspNetCore.Identity;
 namespace WalletApi.Controllers
 {
     [Authorize(Roles = "Administrador")]
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController(IUserRepository userRepository) : ControllerBase
+    public class UserController : ControllerBase
     {
-        private readonly IUserRepository _userRepository = userRepository;
+        private readonly IUserRepository _userRepository;
+        private readonly UserManager<User> _userManager;
 
+        public UserController(IUserRepository userRepository, UserManager<User> userManager)
+        {
+            _userRepository = userRepository;
+            _userManager = userManager;
+        }
         [HttpGet]
         public async Task<ActionResult<PagedUsersResponseDto>> ObtenerUsuarios(
-            [FromQuery] int pagina = 1,
-            [FromQuery] int porPagina = 10)
+                    [FromQuery] int pagina = 1,
+                    [FromQuery] int porPagina = 10)
         {
             if (pagina < 1) pagina = 1;
             if (porPagina < 1 || porPagina > 100) porPagina = 10;
@@ -27,21 +34,14 @@ namespace WalletApi.Controllers
         }
 
         [HttpGet("{id:int}")]
-        [ProducesResponseType(typeof(UserDetailResponseDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<UserDetailResponseDto>> ObtenerPorId(int id)
-        {
-            if (id <= 0)
-            {
-                return BadRequest(new { message = "El identificador de usuario debe ser mayor a cero." });
-            }
 
-            var user = await _userRepository.ObtenerDetallePorIdAsync(id);
+        public ActionResult ObtenerPorId(int id)
+        {
+            var user = _userRepository.ObtenerPorId(id);
 
             if (user == null)
             {
-                return NotFound(new { message = $"No se encontró el usuario con ID {id}." });
+                return NotFound(new { message = "Usuario no encontrado" });
             }
 
             return Ok(user);

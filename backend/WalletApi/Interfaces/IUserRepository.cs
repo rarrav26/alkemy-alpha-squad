@@ -14,6 +14,7 @@ namespace WalletApi.Interfaces
         Task<UserDetailResponseDto> ActualizarUsuarioPorAdminAsync(int id, UpdateUserAdminRequestDto request);
         Task<UserDetailResponseDto> CambiarEstadoUsuarioPorAdminAsync(int id, bool isActive);
         User Crear(User user);
+        User ObtenerPorEmail(string email);
         bool Actualizar(User user);
         bool Eliminar(User user);
     }

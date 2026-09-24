@@ -55,8 +55,12 @@ ALTER TABLE Users
 USE WALLET;
 
 SELECT *
-FROM   Accounts
-WHERE  Id = 1002;
+FROM   AspNetUsers
+WHERE  Id = 1;
+
+UPDATE AspNetUsers
+SET    NormalizedEmail = 'ivokrivzov@gmail.com'
+WHERE  Id = 1;
 
 SELECT *
 FROM   AspNetUsers;

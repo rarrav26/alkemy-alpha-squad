@@ -127,6 +127,8 @@ public class AuthService : IAuthService
         {
             UserId = user.Id.ToString(),
             Email = user.Email ?? "",
+            FirstName = user.FirstName,
+            LastName = user.LastName,
             Message = "Login exitoso",
             Token = token,
             expiresAt = DateTime.UtcNow.AddMinutes(60).ToString("o"),

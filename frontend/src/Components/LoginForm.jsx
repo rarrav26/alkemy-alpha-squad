@@ -13,7 +13,6 @@ import {
 } from "@mui/material";
 import { Visibility, VisibilityOff, LoginOutlined } from "@mui/icons-material";
 import api from "../services/api";
-import { useNavigate } from "react-router-dom";
 import AuthContext from "../Contexts/AuthContext";
 
 function LoginForm({ onToggleRegister, onToggleFirstLogin }) {
@@ -22,8 +21,8 @@ function LoginForm({ onToggleRegister, onToggleFirstLogin }) {
   const [showPassword, setShowPassword] = useState(false);
   const [errorConfig, setErrorConfig] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
-  const { setUserId, setUserToken, setUserRole } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const { setUserId, setUserToken, setUserData,setUserRole } = useContext(AuthContext);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -44,6 +43,11 @@ function LoginForm({ onToggleRegister, onToggleFirstLogin }) {
       }
       if (data?.userId) {
         localStorage.setItem("userId", data.userId);
+        localStorage.setItem("token", data.token);
+        setUserData({
+          firstName:data.firstName,
+          lastName:data.lastName
+        })
       }
       localStorage.setItem("userRole", role);
 
@@ -51,8 +55,13 @@ function LoginForm({ onToggleRegister, onToggleFirstLogin }) {
       setUserId(data.userId);
       setUserToken(data.token);
       if (setUserRole) setUserRole(role);
+       setUserData({
+          firstName:data.firstName,
+          lastName:data.lastName
+        })
 
-      navigate("/dashboard", { replace: true });
+
+      //navigate("/dashboard", { replace: true });
     } catch (error) {
       console.error("Detalle completo del error:", error);
 
