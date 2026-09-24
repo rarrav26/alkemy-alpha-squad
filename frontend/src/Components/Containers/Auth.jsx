@@ -138,13 +138,17 @@ function AuthComponent() {
                 </Typography>
 
                 {/* Tabs Switcher */}
+                {/* Tabs Switcher */}
                 <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
                   <Tabs
                     value={authTab === "first-login" ? false : authTab}
                     onChange={(e, val) => setAuthTab(val)}
                     textColor="primary"
                     indicatorColor="primary"
+                    variant="fullWidth"
                     sx={{
+                      width: "100%",
+                      maxWidth: 400,
                       bgcolor: "rgba(13, 17, 24, 0.9)",
                       backdropFilter: "blur(12px)",
                       borderRadius: 3,
@@ -165,12 +169,13 @@ function AuthComponent() {
                       iconPosition="start"
                       label="Iniciar Sesión"
                       sx={{
+                        flex: 1,
                         textTransform: "none",
                         fontWeight: "bold",
                         fontFamily: "'Plus Jakarta Sans', sans-serif",
                         zIndex: 2,
                         minHeight: 44,
-                        px: 3,
+                        px: { xs: 1, sm: 2 },
                         color: "rgba(255,255,255,0.6)",
                         transition: "color 0.2s",
                         "&.Mui-selected": { color: "#030303 !important" },
@@ -182,12 +187,13 @@ function AuthComponent() {
                       iconPosition="start"
                       label="Crear Cuenta"
                       sx={{
+                        flex: 1,
                         textTransform: "none",
                         fontWeight: "bold",
                         fontFamily: "'Plus Jakarta Sans', sans-serif",
                         zIndex: 2,
                         minHeight: 44,
-                        px: 3,
+                        px: { xs: 1, sm: 2 },
                         color: "rgba(255,255,255,0.6)",
                         transition: "color 0.2s",
                         "&.Mui-selected": { color: "#030303 !important" },
@@ -196,7 +202,6 @@ function AuthComponent() {
                   </Tabs>
                 </Box>
               </Box>
-
               {/* Form card - Less transparent with rich dark surface and crisp border */}
               <Box
                 sx={{
@@ -207,7 +212,8 @@ function AuthComponent() {
                   border: "1px solid rgba(255,255,255,0.1)",
                   borderRadius: 4,
                   p: { xs: 3, sm: 4 },
-                  boxShadow: "0 24px 64px rgba(0,0,0,0.6), 0 0 30px rgba(56,189,248,0.06)",
+                  boxShadow:
+                    "0 24px 64px rgba(0,0,0,0.6), 0 0 30px rgba(56,189,248,0.06)",
                   transition: "max-width 0.3s ease",
                 }}
               >
