@@ -85,6 +85,7 @@ builder.Services.AddScoped<IAliasGeneratorService, AliasGeneratorService>();
 builder.Services.AddScoped<ICvuGeneratorService, CvuGeneratorService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // CORS configuration for Frontend integration
 builder.Services.AddCors(options =>
@@ -196,6 +197,28 @@ using (var scope = app.Services.CreateScope())
             )
             BEGIN
                 ALTER TABLE [dbo].[AspNetUsers] ADD [DebeCambiarPassword] bit NOT NULL CONSTRAINT DF_AspNetUsers_DebeCambiarPassword DEFAULT 0;
+            END
+
+            IF NOT EXISTS (
+                SELECT 1 FROM sys.tables 
+                WHERE object_id = OBJECT_ID(N'[dbo].[Notifications]')
+            )
+            BEGIN
+                CREATE TABLE [dbo].[Notifications] (
+                    [Id] int NOT NULL IDENTITY(1,1),
+                    [UserId] int NOT NULL,
+                    [Title] nvarchar(100) NOT NULL,
+                    [Message] nvarchar(500) NOT NULL,
+                    [Type] nvarchar(50) NOT NULL,
+                    [IsRead] bit NOT NULL DEFAULT 0,
+                    [CreatedAt] datetime2 NOT NULL DEFAULT GETUTCDATE(),
+                    [ReferenceId] int NULL,
+                    CONSTRAINT [PK_Notifications] PRIMARY KEY ([Id]),
+                    CONSTRAINT [FK_Notifications_Users] FOREIGN KEY ([UserId]) REFERENCES [dbo].[AspNetUsers] ([Id]) ON DELETE CASCADE
+                );
+
+                CREATE INDEX [IX_Notifications_UserId_IsRead] ON [dbo].[Notifications] ([UserId], [IsRead]);
+                CREATE INDEX [IX_Notifications_CreatedAt] ON [dbo].[Notifications] ([CreatedAt]);
             END
         ");
 

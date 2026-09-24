@@ -12,15 +12,18 @@ public class AccountService : IAccountService
     private readonly WalletContext _context;
     private readonly IAliasGeneratorService _aliasGenerator;
     private readonly ICvuGeneratorService _cvuGenerator;
+    private readonly INotificationService _notificationService;
 
     public AccountService(
         WalletContext context,
         IAliasGeneratorService aliasGenerator,
-        ICvuGeneratorService cvuGenerator)
+        ICvuGeneratorService cvuGenerator,
+        INotificationService notificationService)
     {
         _context = context;
         _aliasGenerator = aliasGenerator;
         _cvuGenerator = cvuGenerator;
+        _notificationService = notificationService;
     }
 
     // 1. DEPÓSITO DE DINERO
@@ -67,6 +70,21 @@ public class AccountService : IAccountService
             _context.Transactions.Add(tx);
             await _context.SaveChangesAsync();
             await transaction.CommitAsync();
+
+            try
+            {
+                await _notificationService.CreateNotificationAsync(
+                    userId,
+                    "Depósito exitoso",
+                    $"Se acreditaron ${request.Amount:N2} en tu cuenta.",
+                    "deposit",
+                    tx.Id
+                );
+            }
+            catch
+            {
+                // No interrumpir la respuesta si falla la notificación
+            }
 
             return new DepositResponseDto
             {
@@ -264,6 +282,31 @@ public class AccountService : IAccountService
 
             // 4. Confirmación de toda la operación
             await transaction.CommitAsync();
+
+            try
+            {
+                // Notificación para el emisor
+                await _notificationService.CreateNotificationAsync(
+                    userId,
+                    "Transferencia enviada",
+                    $"Enviaste ${request.Amount:N2} a {destFullName}.",
+                    "transfer_sent",
+                    debitTx.Id
+                );
+
+                // Notificación para el destinatario
+                await _notificationService.CreateNotificationAsync(
+                    targetAccount.UserId,
+                    "Transferencia recibida",
+                    $"Recibiste ${request.Amount:N2} de {sourceFullName}.",
+                    "transfer_received",
+                    creditTx.Id
+                );
+            }
+            catch
+            {
+                // No interrumpir la respuesta si falla la notificación
+            }
 
             var nuevoSaldo = sourceAccount.Balance - request.Amount;
 

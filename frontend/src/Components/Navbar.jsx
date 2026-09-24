@@ -24,6 +24,7 @@ import {
 import { AccountBalanceWallet } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import AuthContext from "../Contexts/AuthContext";
+import NotificationsPopover from "./NotificationsPopover";
 
 function Navbar() {
   const [anchorEl, setAnchorEl] = useState(null);
@@ -154,6 +155,11 @@ function Navbar() {
             </ListItemButton>
           </Box>
         )}
+
+        {/* Botón de Notificaciones con Badge (9+) */}
+        <Box sx={{ mr: 1.5, ml: 1 }}>
+          <NotificationsPopover />
+        </Box>
 
         <Box>
           <Button

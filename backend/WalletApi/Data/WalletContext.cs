@@ -14,6 +14,7 @@ public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
     public virtual DbSet<Account> Accounts { get; set; } = null!;
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = null!;
     public virtual DbSet<Transaction> Transactions { get; set; } = null!;
+    public virtual DbSet<Notification> Notifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -95,7 +96,25 @@ public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
             entity.Property(e => e.Type).HasMaxLength(20).IsRequired();
             entity.Property(e => e.Description).HasMaxLength(255);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+        });
 
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.ToTable("Notifications");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).HasMaxLength(100).IsRequired();
+            entity.Property(e => e.Message).HasMaxLength(500).IsRequired();
+            entity.Property(e => e.Type).HasMaxLength(50).IsRequired();
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+            entity.HasOne(d => d.User)
+                .WithMany()
+                .HasForeignKey(d => d.UserId)
+                .OnDelete(DeleteBehavior.Cascade)
+                .HasConstraintName("FK_Notifications_Users");
+
+            entity.HasIndex(e => new { e.UserId, e.IsRead });
+            entity.HasIndex(e => e.CreatedAt);
         });
 
         modelBuilder.Entity<IdentityRole<int>>().HasData(
