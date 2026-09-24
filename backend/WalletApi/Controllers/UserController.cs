@@ -82,25 +82,78 @@ namespace WalletApi.Controllers
             }
         }
 
-        [HttpPost("{id:int}")]
-        public ActionResult<User> Actualizar(int id, GuardarUserRequest request)
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(UserDetailResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<ActionResult<UserDetailResponseDto>> ActualizarUsuario(int id, [FromBody] UpdateUserAdminRequestDto request)
         {
-
-            var user = new User
+            if (id <= 0)
             {
-                Id = id,
-                FirstName = request.FirstName,
-                LastName = request.LastName,
-                DocumentTypeId = request.DocumentTypeId,
-                DocumentNumber = request.DocumentNumber
-            };
-            var userCreado = _userRepository.Crear(user);
+                return BadRequest(new { message = "El identificador de usuario debe ser mayor a cero." });
+            }
 
-            return CreatedAtAction(
-                           nameof(ObtenerPorId),
-                           new { id = userCreado.Id },
-                           userCreado
-                       );
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                var usuarioActualizado = await _userRepository.ActualizarUsuarioPorAdminAsync(id, request);
+                return Ok(usuarioActualizado);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                if (ex.Message.Contains("email", StringComparison.OrdinalIgnoreCase))
+                {
+                    return Conflict(new { message = ex.Message });
+                }
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error inesperado al actualizar el usuario." });
+            }
+        }
+
+        [HttpPatch("{id:int}/status")]
+        [ProducesResponseType(typeof(UserDetailResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<UserDetailResponseDto>> CambiarEstado(int id, [FromBody] UpdateUserStatusRequestDto request)
+        {
+            if (id <= 0)
+            {
+                return BadRequest(new { message = "El identificador de usuario debe ser mayor a cero." });
+            }
+
+            try
+            {
+                var usuarioActualizado = await _userRepository.CambiarEstadoUsuarioPorAdminAsync(id, request.IsActive);
+                return Ok(usuarioActualizado);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Ocurrió un error inesperado al modificar el estado del usuario." });
+            }
         }
 
         [HttpDelete("{id:int}")]

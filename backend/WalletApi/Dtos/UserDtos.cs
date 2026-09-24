@@ -63,3 +63,24 @@ public class CreateUserAdminRequestDto
     public string Email { get; set; } = string.Empty;
 }
 
+public class UpdateUserAdminRequestDto
+{
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El nombre es obligatorio.")]
+    [System.ComponentModel.DataAnnotations.StringLength(50, MinimumLength = 2, ErrorMessage = "El nombre debe tener entre 2 y 50 caracteres.")]
+    public string FirstName { get; set; } = string.Empty;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El apellido es obligatorio.")]
+    [System.ComponentModel.DataAnnotations.StringLength(50, MinimumLength = 2, ErrorMessage = "El apellido debe tener entre 2 y 50 caracteres.")]
+    public string LastName { get; set; } = string.Empty;
+
+    [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "El correo electrónico es obligatorio.")]
+    [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Formato de correo electrónico inválido.")]
+    [System.ComponentModel.DataAnnotations.StringLength(250, ErrorMessage = "El correo no puede exceder 250 caracteres.")]
+    public string Email { get; set; } = string.Empty;
+}
+
+public class UpdateUserStatusRequestDto
+{
+    public bool IsActive { get; set; }
+}
+

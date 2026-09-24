@@ -266,6 +266,92 @@ namespace WalletApi.Repositories
             }
         }
 
+        public async Task<UserDetailResponseDto> ActualizarUsuarioPorAdminAsync(int id, UpdateUserAdminRequestDto request)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"No se encontró el usuario con ID {id}.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("Administrador"))
+            {
+                throw new InvalidOperationException("Solo se pueden actualizar datos de usuarios con rol 'Usuario'.");
+            }
+
+            var normalizedEmail = request.Email.Trim().ToUpperInvariant();
+            if (!string.Equals(user.NormalizedEmail, normalizedEmail, StringComparison.OrdinalIgnoreCase))
+            {
+                var emailExists = await _context.Users.AnyAsync(u => u.Id != id && u.NormalizedEmail == normalizedEmail);
+                if (emailExists)
+                {
+                    throw new InvalidOperationException("el email ya esta en uso");
+                }
+
+                user.Email = request.Email.Trim();
+                user.NormalizedEmail = normalizedEmail;
+                user.UserName = request.Email.Trim();
+                user.NormalizedUserName = normalizedEmail;
+            }
+
+            user.FirstName = request.FirstName.Trim();
+            user.LastName = request.LastName.Trim();
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                var errors = string.Join("; ", updateResult.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Error al actualizar el usuario: {errors}");
+            }
+
+            var userDetail = await ObtenerDetallePorIdAsync(id);
+            if (userDetail == null)
+            {
+                throw new InvalidOperationException("Error al recuperar los datos actualizados del usuario.");
+            }
+
+            return userDetail;
+        }
+
+        public async Task<UserDetailResponseDto> CambiarEstadoUsuarioPorAdminAsync(int id, bool isActive)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                throw new KeyNotFoundException($"No se encontró el usuario con ID {id}.");
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+            if (roles.Contains("Administrador"))
+            {
+                throw new InvalidOperationException("No se permite modificar el estado de un usuario administrador.");
+            }
+
+            user.IsActive = isActive;
+
+            // Si se desactiva el usuario, revocamos sus sesiones y tokens activos
+            if (!isActive)
+            {
+                user.SecurityStamp = Guid.NewGuid().ToString();
+            }
+
+            var updateResult = await _userManager.UpdateAsync(user);
+            if (!updateResult.Succeeded)
+            {
+                var errors = string.Join("; ", updateResult.Errors.Select(e => e.Description));
+                throw new InvalidOperationException($"Error al cambiar el estado del usuario: {errors}");
+            }
+
+            var userDetail = await ObtenerDetallePorIdAsync(id);
+            if (userDetail == null)
+            {
+                throw new InvalidOperationException("Error al recuperar los datos del usuario actualizado.");
+            }
+
+            return userDetail;
+        }
+
         public User Crear(User user)
         {
             throw new NotImplementedException();

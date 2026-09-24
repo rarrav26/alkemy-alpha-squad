@@ -17,6 +17,10 @@ import {
   Avatar,
   Paper,
   Alert,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import {
   PeopleAltOutlined as UsersIcon,
@@ -25,9 +29,14 @@ import {
   Refresh as RefreshIcon,
   VisibilityOutlined as ViewDetailIcon,
   PersonAddAlt1Outlined as PersonAddIcon,
+  EditOutlined as EditIcon,
+  BlockOutlined as BlockIcon,
+  CheckCircleOutlined as CheckCircleOutlinedIcon,
 } from "@mui/icons-material";
+import userService from "../../services/userService";
 import UserDetailModal from "../UserDetailModal";
 import CreateUserModal from "../CreateUserModal";
+import EditUserModal from "../EditUserModal";
 
 function UsersList() {
   const [usuarios, setUsuarios] = useState([]);
@@ -46,6 +55,14 @@ function UsersList() {
   // Modal de creación de usuario
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
+  // Modal de edición de usuario
+  const [userToEdit, setUserToEdit] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // Diálogo de confirmación de activación / desactivación
+  const [statusDialogUser, setStatusDialogUser] = useState(null);
+  const [statusDialogLoading, setStatusDialogLoading] = useState(false);
+
   const handleOpenDetail = (userId) => {
     setSelectedUserId(userId);
     setModalOpen(true);
@@ -54,6 +71,70 @@ function UsersList() {
   const handleCloseDetail = () => {
     setModalOpen(false);
     setSelectedUserId(null);
+  };
+
+  const handleOpenEdit = (user) => {
+    setUserToEdit(user);
+    setEditModalOpen(true);
+  };
+
+  const handleCloseEdit = () => {
+    setEditModalOpen(false);
+    setUserToEdit(null);
+  };
+
+  const handleOpenStatusConfirm = (user) => {
+    setStatusDialogUser(user);
+  };
+
+  const handleCloseStatusConfirm = () => {
+    if (statusDialogLoading) return;
+    setStatusDialogUser(null);
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!statusDialogUser) return;
+    try {
+      setStatusDialogLoading(true);
+      const newStatus = !statusDialogUser.isActive;
+      await userService.updateUserStatus(statusDialogUser.id, newStatus);
+
+      setUsuarios((prev) =>
+        prev.map((u) => (u.id === statusDialogUser.id ? { ...u, isActive: newStatus } : u))
+      );
+
+      setSuccessMessage(
+        newStatus
+          ? `Usuario ${statusDialogUser.firstName} ${statusDialogUser.lastName} reactivado con éxito.`
+          : `Usuario ${statusDialogUser.firstName} ${statusDialogUser.lastName} desactivado con éxito.`
+      );
+
+      setStatusDialogUser(null);
+      setTimeout(() => {
+        setSuccessMessage(null);
+      }, 5000);
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Error al modificar el estado del usuario.";
+      setError(msg);
+      setStatusDialogUser(null);
+    } finally {
+      setStatusDialogLoading(false);
+    }
+  };
+
+  const handleUserUpdated = (updatedUser) => {
+    setSuccessMessage(
+      `Usuario ${updatedUser.firstName} ${updatedUser.lastName} actualizado con éxito.`
+    );
+    setUsuarios((prev) =>
+      prev.map((u) => (u.id === updatedUser.id ? { ...u, ...updatedUser } : u))
+    );
+    setTimeout(() => {
+      setSuccessMessage(null);
+    }, 5000);
   };
 
   const handleUserCreated = (createdUser) => {
@@ -381,27 +462,91 @@ function UsersList() {
 
                         {/* Acciones */}
                         <TableCell align="center">
-                          <Tooltip title="Ver detalle del usuario" arrow placement="top">
-                            <IconButton
-                              size="small"
-                              onClick={() => handleOpenDetail(user.id)}
-                              sx={{
-                                color: "#38bdf8",
-                                bgcolor: "rgba(56, 189, 248, 0.08)",
-                                border: "1px solid rgba(56, 189, 248, 0.2)",
-                                borderRadius: "8px",
-                                p: 0.9,
-                                transition: "all 0.2s ease",
-                                "&:hover": {
-                                  bgcolor: "rgba(56, 189, 248, 0.2)",
-                                  borderColor: "#38bdf8",
-                                  transform: "scale(1.08)",
-                                },
-                              }}
-                            >
-                              <ViewDetailIcon sx={{ fontSize: 18 }} />
-                            </IconButton>
-                          </Tooltip>
+                          <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
+                            <Tooltip title="Ver detalle del usuario" arrow placement="top">
+                              <IconButton
+                                size="small"
+                                onClick={() => handleOpenDetail(user.id)}
+                                sx={{
+                                  color: "#38bdf8",
+                                  bgcolor: "rgba(56, 189, 248, 0.08)",
+                                  border: "1px solid rgba(56, 189, 248, 0.2)",
+                                  borderRadius: "8px",
+                                  p: 0.9,
+                                  transition: "all 0.2s ease",
+                                  "&:hover": {
+                                    bgcolor: "rgba(56, 189, 248, 0.2)",
+                                    borderColor: "#38bdf8",
+                                    transform: "scale(1.08)",
+                                  },
+                                }}
+                              >
+                                <ViewDetailIcon sx={{ fontSize: 18 }} />
+                              </IconButton>
+                            </Tooltip>
+
+                            {user.role !== "Administrador" && (
+                              <Tooltip title="Editar datos del usuario" arrow placement="top">
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenEdit(user)}
+                                  sx={{
+                                    color: "#a5b4fc",
+                                    bgcolor: "rgba(99, 102, 241, 0.08)",
+                                    border: "1px solid rgba(99, 102, 241, 0.2)",
+                                    borderRadius: "8px",
+                                    p: 0.9,
+                                    transition: "all 0.2s ease",
+                                    "&:hover": {
+                                      bgcolor: "rgba(99, 102, 241, 0.2)",
+                                      borderColor: "#818cf8",
+                                      transform: "scale(1.08)",
+                                    },
+                                  }}
+                                >
+                                  <EditIcon sx={{ fontSize: 18 }} />
+                                </IconButton>
+                              </Tooltip>
+                            )}
+
+                            {user.role !== "Administrador" && (
+                              <Tooltip
+                                title={user.isActive ? "Desactivar usuario" : "Activar usuario"}
+                                arrow
+                                placement="top"
+                              >
+                                <IconButton
+                                  size="small"
+                                  onClick={() => handleOpenStatusConfirm(user)}
+                                  sx={{
+                                    color: user.isActive ? "#f87171" : "#34d399",
+                                    bgcolor: user.isActive
+                                      ? "rgba(239, 68, 68, 0.08)"
+                                      : "rgba(16, 185, 129, 0.08)",
+                                    border: user.isActive
+                                      ? "1px solid rgba(239, 68, 68, 0.2)"
+                                      : "1px solid rgba(16, 185, 129, 0.2)",
+                                    borderRadius: "8px",
+                                    p: 0.9,
+                                    transition: "all 0.2s ease",
+                                    "&:hover": {
+                                      bgcolor: user.isActive
+                                        ? "rgba(239, 68, 68, 0.2)"
+                                        : "rgba(16, 185, 129, 0.2)",
+                                      borderColor: user.isActive ? "#ef4444" : "#10b981",
+                                      transform: "scale(1.08)",
+                                    },
+                                  }}
+                                >
+                                  {user.isActive ? (
+                                    <BlockIcon sx={{ fontSize: 18 }} />
+                                  ) : (
+                                    <CheckCircleOutlinedIcon sx={{ fontSize: 18 }} />
+                                  )}
+                                </IconButton>
+                              </Tooltip>
+                            )}
+                          </Box>
                         </TableCell>
                       </TableRow>
                     );
@@ -477,6 +622,8 @@ function UsersList() {
         open={modalOpen}
         onClose={handleCloseDetail}
         userId={selectedUserId}
+        onEdit={handleOpenEdit}
+        onStatusChange={handleOpenStatusConfirm}
       />
 
       {/* Modal de Creación de Usuario */}
@@ -485,6 +632,133 @@ function UsersList() {
         onClose={() => setCreateModalOpen(false)}
         onSuccess={handleUserCreated}
       />
+
+      {/* Modal de Edición de Usuario */}
+      <EditUserModal
+        open={editModalOpen}
+        onClose={handleCloseEdit}
+        user={userToEdit}
+        onSuccess={handleUserUpdated}
+      />
+
+      {/* Diálogo de Confirmación de Activación / Desactivación */}
+      <Dialog
+        open={Boolean(statusDialogUser)}
+        onClose={statusDialogLoading ? undefined : handleCloseStatusConfirm}
+        maxWidth="xs"
+        fullWidth
+        slotProps={{
+          paper: {
+            sx: {
+              bgcolor: "rgba(18, 18, 26, 0.98)",
+              backdropFilter: "blur(24px)",
+              border: "1px solid rgba(255, 255, 255, 0.1)",
+              borderRadius: "18px",
+              boxShadow: "0 24px 60px rgba(0, 0, 0, 0.75)",
+              color: "#f3f4f6",
+              p: 1,
+            },
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1, display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 38,
+              height: 38,
+              borderRadius: "10px",
+              bgcolor: statusDialogUser?.isActive
+                ? "rgba(239, 68, 68, 0.15)"
+                : "rgba(16, 185, 129, 0.15)",
+              color: statusDialogUser?.isActive ? "#ef4444" : "#10b981",
+            }}
+          >
+            {statusDialogUser?.isActive ? (
+              <BlockIcon fontSize="small" />
+            ) : (
+              <CheckCircleOutlinedIcon fontSize="small" />
+            )}
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 700, fontSize: "1.05rem" }}>
+            {statusDialogUser?.isActive ? "¿Desactivar usuario?" : "¿Activar usuario?"}
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent sx={{ py: 1.5 }}>
+          <Typography sx={{ color: "#d1d5db", fontSize: "0.92rem", lineHeight: 1.5, mb: 1.5 }}>
+            {statusDialogUser?.isActive
+              ? `¿Está seguro de que desea desactivar a ${statusDialogUser?.firstName} ${statusDialogUser?.lastName}?`
+              : `¿Está seguro de que desea reactivar a ${statusDialogUser?.firstName} ${statusDialogUser?.lastName}?`}
+          </Typography>
+
+          <Box
+            sx={{
+              p: 1.5,
+              borderRadius: "10px",
+              bgcolor: "rgba(255, 255, 255, 0.03)",
+              border: "1px solid rgba(255, 255, 255, 0.06)",
+            }}
+          >
+            <Typography variant="caption" sx={{ color: "#9ca3af", display: "block" }}>
+              {statusDialogUser?.isActive
+                ? "El usuario no podrá iniciar sesión, operar ni recibir transferencias. Sus cuentas y movimientos se mantendrán intactos."
+                : "El usuario recuperará el acceso normalmente para iniciar sesión y operar en la plataforma."}
+            </Typography>
+          </Box>
+        </DialogContent>
+
+        <DialogActions sx={{ px: 2.5, pb: 2, pt: 1, gap: 1.2 }}>
+          <Button
+            onClick={handleCloseStatusConfirm}
+            disabled={statusDialogLoading}
+            sx={{
+              color: "#9ca3af",
+              borderRadius: "10px",
+              px: 2,
+              textTransform: "none",
+              fontSize: "0.88rem",
+              "&:hover": { bgcolor: "rgba(255, 255, 255, 0.05)", color: "#f3f4f6" },
+            }}
+          >
+            Cancelar
+          </Button>
+
+          <Button
+            onClick={handleConfirmStatusChange}
+            disabled={statusDialogLoading}
+            variant="contained"
+            sx={{
+              bgcolor: statusDialogUser?.isActive ? "#ef4444" : "#10b981",
+              color: "#ffffff",
+              fontWeight: 700,
+              borderRadius: "10px",
+              px: 2.5,
+              textTransform: "none",
+              fontSize: "0.88rem",
+              boxShadow: statusDialogUser?.isActive
+                ? "0 0 16px rgba(239, 68, 68, 0.35)"
+                : "0 0 16px rgba(16, 185, 129, 0.35)",
+              "&:hover": {
+                bgcolor: statusDialogUser?.isActive ? "#dc2626" : "#059669",
+              },
+            }}
+          >
+            {statusDialogLoading ? (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <CircularProgress size={16} color="inherit" />
+                <span>Procesando...</span>
+              </Box>
+            ) : statusDialogUser?.isActive ? (
+              "Sí, desactivar"
+            ) : (
+              "Sí, activar"
+            )}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

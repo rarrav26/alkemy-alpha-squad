@@ -29,10 +29,20 @@ import {
   CalendarToday as CalendarIcon,
   AccountBalanceWallet as WalletIcon,
   Tag as TagIcon,
+  EditOutlined as EditIcon,
+  BlockOutlined as BlockIcon,
+  CheckCircleOutlined as CheckCircleOutlinedIcon,
 } from "@mui/icons-material";
 import userService from "../services/userService";
 
-export default function UserDetailModal({ open, onClose, userId, initialUserData = null }) {
+export default function UserDetailModal({
+  open,
+  onClose,
+  userId,
+  initialUserData = null,
+  onEdit = () => {},
+  onStatusChange = () => {},
+}) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -410,7 +420,7 @@ export default function UserDetailModal({ open, onClose, userId, initialUserData
                       </Box>
                     </Box>
 
-                    {/* Alias (3 palabras separadas por punto) */}
+                    {/* Alias de la cuenta */}
                     <Box
                       sx={{
                         p: 1.5,
@@ -427,7 +437,7 @@ export default function UserDetailModal({ open, onClose, userId, initialUserData
                         <Box sx={{ display: "flex", alignItems: "center", gap: 0.8, mb: 0.3 }}>
                           <TagIcon sx={{ fontSize: 15, color: "#9ca3af" }} />
                           <Typography variant="caption" sx={{ color: "#9ca3af", fontWeight: 600 }}>
-                            Alias de la Cuenta (3 palabras)
+                            Alias de la Cuenta
                           </Typography>
                         </Box>
                         <Typography
@@ -543,8 +553,68 @@ export default function UserDetailModal({ open, onClose, userId, initialUserData
             py: 2,
             borderTop: "1px solid rgba(255, 255, 255, 0.08)",
             bgcolor: "rgba(255, 255, 255, 0.01)",
+            display: "flex",
+            justifyContent: "space-between",
           }}
         >
+          {displayUser && displayUser.role !== "Administrador" ? (
+            <Box sx={{ display: "flex", gap: 1.5 }}>
+              <Button
+                onClick={() => {
+                  onClose();
+                  onEdit(displayUser);
+                }}
+                variant="outlined"
+                startIcon={<EditIcon />}
+                sx={{
+                  borderColor: "rgba(56, 189, 248, 0.3)",
+                  color: "#38bdf8",
+                  borderRadius: "10px",
+                  px: 2.5,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "0.88rem",
+                  "&:hover": {
+                    borderColor: "#38bdf8",
+                    bgcolor: "rgba(56, 189, 248, 0.1)",
+                  },
+                }}
+              >
+                Editar Usuario
+              </Button>
+
+              <Button
+                onClick={() => {
+                  onClose();
+                  onStatusChange(displayUser);
+                }}
+                variant="outlined"
+                startIcon={displayUser.isActive ? <BlockIcon /> : <CheckCircleOutlinedIcon />}
+                sx={{
+                  borderColor: displayUser.isActive
+                    ? "rgba(239, 68, 68, 0.3)"
+                    : "rgba(16, 185, 129, 0.3)",
+                  color: displayUser.isActive ? "#f87171" : "#34d399",
+                  borderRadius: "10px",
+                  px: 2,
+                  textTransform: "none",
+                  fontWeight: 600,
+                  fontSize: "0.88rem",
+                  "&:hover": {
+                    borderColor: displayUser.isActive ? "#ef4444" : "#10b981",
+                    bgcolor: displayUser.isActive
+                      ? "rgba(239, 68, 68, 0.1)"
+                      : "rgba(16, 185, 129, 0.1)",
+                  },
+                }}
+              >
+                {displayUser.isActive ? "Desactivar" : "Activar"}
+              </Button>
+            </Box>
+          ) : (
+            <Box />
+          )}
+
           <Button
             onClick={onClose}
             variant="outlined"
@@ -553,6 +623,8 @@ export default function UserDetailModal({ open, onClose, userId, initialUserData
               color: "#f3f4f6",
               borderRadius: "10px",
               px: 3,
+              textTransform: "none",
+              fontSize: "0.88rem",
               "&:hover": {
                 borderColor: "#38bdf8",
                 bgcolor: "rgba(56, 189, 248, 0.08)",

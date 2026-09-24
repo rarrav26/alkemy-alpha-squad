@@ -26,9 +26,9 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
     const trimmed = (val || "").trim();
     if (!trimmed) return "El destino es obligatorio.";
     const isCvu = /^\d{22}$/.test(trimmed);
-    const isAlias = /^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+){2}(\.[0-9]+)?$/.test(trimmed);
+    const isAlias = trimmed.length >= 3;
     if (!isCvu && !isAlias) {
-      return "Ingrese un CVU válido (22 dígitos) o un Alias (ej. auto.perro.gato).";
+      return "Ingrese un CVU válido (22 dígitos) o un Alias válido.";
     }
     return null;
   };
@@ -237,7 +237,7 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
             id="transfer-destination"
             label="Alias o CVU de destino"
             name="destination"
-            placeholder="Ej: auto.perro.gato o 22 dígitos"
+            placeholder="Ej: mialias.mp o 22 dígitos"
             value={destination}
             disabled={loading}
             onChange={(e) => {
@@ -263,7 +263,7 @@ function TransferForm({ onTransferSuccess, availableBalance }) {
                 ),
               },
             }}
-            helperText="Ingresá el Alias (3 palabras con punto) o CVU (22 números)"
+            helperText="Ingresá el Alias o CVU (22 números)"
             error={Boolean(lookupError)}
           />
 

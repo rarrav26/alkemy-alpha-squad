@@ -35,6 +35,12 @@ public class AccountService : IAccountService
             throw new ArgumentException("El importe debe ser mayor a cero.");
         }
 
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null || !user.IsActive)
+        {
+            throw new InvalidOperationException("El usuario se encuentra inactivo y no puede realizar depósitos.");
+        }
+
         var account = await _context.Accounts
             .FirstOrDefaultAsync(a => a.UserId == userId);
 
@@ -331,7 +337,7 @@ public class AccountService : IAccountService
         var account = new Account
         {
             UserId = userId,
-            Balance = 10000m,
+            Balance = 0m,
             Currency = "ARS",
             Alias = alias,
             Cvu = cvu,
