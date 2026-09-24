@@ -132,14 +132,15 @@ function Dashboard() {
               background:
                 "linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 15, 26, 0.98) 100%)",
               border: "1px solid rgba(56, 189, 248, 0.25)",
-              boxShadow: "0 16px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(56, 189, 248, 0.08)",
+              boxShadow:
+                "0 16px 40px rgba(0, 0, 0, 0.5), 0 0 30px rgba(56, 189, 248, 0.08)",
             }}
           >
             <CardContent sx={{ p: { xs: 3, sm: 4 } }}>
               <Stack
                 direction={{ xs: "column", md: "row" }}
                 justifyContent="space-between"
-                alignItems={{ xs: "flex-start", md: "center" }}
+                alignItems={{ xs: "stretch", md: "center" }}
                 spacing={3}
               >
                 {/* Left: Balance info */}
@@ -205,7 +206,10 @@ function Dashboard() {
                       sx={{
                         color: "#9ca3af",
                         bgcolor: "rgba(255,255,255,0.05)",
-                        "&:hover": { color: "#38bdf8", bgcolor: "rgba(56,189,248,0.15)" },
+                        "&:hover": {
+                          color: "#38bdf8",
+                          bgcolor: "rgba(56,189,248,0.15)",
+                        },
                       }}
                       aria-label="Ocultar o mostrar saldo"
                     >
@@ -219,7 +223,12 @@ function Dashboard() {
 
                   <Typography
                     variant="caption"
-                    sx={{ color: "#9ca3af", mt: 0.8, display: "block", fontWeight: 500 }}
+                    sx={{
+                      color: "#9ca3af",
+                      mt: 0.8,
+                      display: "block",
+                      fontWeight: 500,
+                    }}
                   >
                     Moneda: {account.currency || "ARS"}
                   </Typography>
@@ -231,9 +240,9 @@ function Dashboard() {
                     bgcolor: "rgba(3, 7, 18, 0.6)",
                     border: "1px solid rgba(255, 255, 255, 0.08)",
                     borderRadius: "14px",
-                    p: 2.5,
-                    minWidth: { md: 340 },
-                    width: { xs: "100%", md: "auto" },
+                    p: { xs: 2, sm: 2.5 },
+                    width: "100%",
+                    maxWidth: { md: 360 },
                   }}
                 >
                   {/* Alias */}
@@ -258,7 +267,11 @@ function Dashboard() {
                       </Typography>
                       <Typography
                         variant="body2"
-                        sx={{ color: "#38bdf8", fontWeight: 700, fontSize: "0.95rem" }}
+                        sx={{
+                          color: "#38bdf8",
+                          fontWeight: 700,
+                          fontSize: "0.95rem",
+                        }}
                       >
                         {account.alias}
                       </Typography>
@@ -280,7 +293,9 @@ function Dashboard() {
                     </IconButton>
                   </Stack>
 
-                  <Divider sx={{ borderColor: "rgba(255,255,255,0.08)", my: 1.5 }} />
+                  <Divider
+                    sx={{ borderColor: "rgba(255,255,255,0.08)", my: 1.5 }}
+                  />
 
                   {/* CVU */}
                   <Stack
@@ -306,9 +321,13 @@ function Dashboard() {
                         sx={{
                           color: "#f3f4f6",
                           fontWeight: 600,
-                          fontFamily: "monospace",
-                          letterSpacing: "0.04em",
-                          fontSize: "0.85rem",
+                          letterSpacing: "-0.02em",
+                          fontSize: {
+                            xs: "0.72rem",
+                            sm: "0.82rem",
+                            md: "0.85rem",
+                          },
+                          wordBreak: "break-all",
                         }}
                       >
                         {account.cvu}
@@ -336,10 +355,7 @@ function Dashboard() {
           </Card>
 
           {/* ═══════════ QUICK ACTIONS ═══════════ */}
-          <Stack
-            direction={{ xs: "column", sm: "row" }}
-            spacing={2}
-          >
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             {/* Deposit Button */}
             <Card
               elevation={0}
@@ -400,10 +416,7 @@ function Dashboard() {
                   >
                     Depositar
                   </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "#9ca3af" }}
-                  >
+                  <Typography variant="caption" sx={{ color: "#9ca3af" }}>
                     Ingresá dinero a tu cuenta
                   </Typography>
                 </Box>
@@ -414,9 +427,7 @@ function Dashboard() {
             <Card
               elevation={0}
               onClick={() =>
-                setActiveAction(
-                  activeAction === "transfer" ? null : "transfer"
-                )
+                setActiveAction(activeAction === "transfer" ? null : "transfer")
               }
               sx={{
                 flex: 1,
@@ -472,10 +483,7 @@ function Dashboard() {
                   >
                     Transferir
                   </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: "#9ca3af" }}
-                  >
+                  <Typography variant="caption" sx={{ color: "#9ca3af" }}>
                     Enviá dinero a otra cuenta
                   </Typography>
                 </Box>
