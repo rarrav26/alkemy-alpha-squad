@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import {
   AppBar,
   Toolbar,
@@ -22,11 +22,13 @@ import {
 } from "@mui/icons-material";
 import { AccountBalanceWallet } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
+import AuthContext from "../Contexts/AuthContext";
 
 function Navbar() {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
+  const { userData, logout } = useContext(AuthContext);
 
   // Handlers to open and close the menu
   const handleProfileClick = (event) => {
@@ -58,6 +60,7 @@ function Navbar() {
         console.log(data.message);
         localStorage.removeItem("token");
         localStorage.removeItem("userId");
+        logout();
         window.location.href = "/auth";
       } else {
         const errorData = await response.json();
@@ -67,6 +70,8 @@ function Navbar() {
       console.error("Error de red:", error);
     }
   }
+
+  console.log(userData);
 
   return (
     <AppBar
@@ -104,7 +109,10 @@ function Navbar() {
             sx={{
               borderRadius: 2,
               color: "#9ca3af",
-              "&:hover": { color: "#f3f4f6", bgcolor: "rgba(255,255,255,0.04)" },
+              "&:hover": {
+                color: "#f3f4f6",
+                bgcolor: "rgba(255,255,255,0.04)",
+              },
             }}
           >
             <ListItemText
@@ -120,7 +128,10 @@ function Navbar() {
             sx={{
               borderRadius: 2,
               color: "#9ca3af",
-              "&:hover": { color: "#f3f4f6", bgcolor: "rgba(255,255,255,0.04)" },
+              "&:hover": {
+                color: "#f3f4f6",
+                bgcolor: "rgba(255,255,255,0.04)",
+              },
             }}
           >
             <ListItemText
@@ -147,11 +158,11 @@ function Navbar() {
               },
             }}
           >
-            <Avatar
-              alt="Alex Morgan"
-              src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80"
-              sx={{ width: 36, height: 36, mr: 1.5 }}
-            />
+            <Avatar sx={{ width: 36, height: 36, mr: 1.5, background:"linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%)" }}>
+              {userData.firstName?.charAt(0)}
+              {userData.lastName?.charAt(0)}
+            </Avatar>
+
             <Typography
               variant="body2"
               sx={{
@@ -161,7 +172,7 @@ function Navbar() {
                 mr: 0.5,
               }}
             >
-              Alex Morgan
+              {userData.firstName} {userData.lastName}
             </Typography>
             <ArrowDownIcon sx={{ fontSize: 18, color: "#9ca3af" }} />
           </Button>
@@ -227,7 +238,7 @@ function Navbar() {
               />
             </MenuItem>
 
-            <MenuItem onClick={() => handleNavigate("Profile Page")}>
+            <MenuItem onClick={() => handleNavigate("profile")}>
               <ListItemIcon>
                 <PersonIcon fontSize="small" sx={{ color: "#38bdf8" }} />
               </ListItemIcon>

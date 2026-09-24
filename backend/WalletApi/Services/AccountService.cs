@@ -205,7 +205,7 @@ public class AccountService : IAccountService
             var debitoExitoso = await _context.Accounts
                 .Where(a => a.Id == sourceAccount.Id && a.Balance >= request.Amount)
                 .ExecuteUpdateAsync(setter => setter.SetProperty(
-                    a => a.Balance, 
+                    a => a.Balance,
                     a => a.Balance - request.Amount
                 ));
 
@@ -218,7 +218,7 @@ public class AccountService : IAccountService
             await _context.Accounts
                 .Where(a => a.Id == targetAccount.Id)
                 .ExecuteUpdateAsync(setter => setter.SetProperty(
-                    a => a.Balance, 
+                    a => a.Balance,
                     a => a.Balance + request.Amount
                 ));
 
@@ -350,6 +350,27 @@ public class AccountService : IAccountService
             Cvu = account.Cvu,
             CreatedAt = account.CreatedAt
         };
+    }
+
+    public async Task UpdateAliasAsync(int userId, string newAlias)
+    {
+        var account = await _context.Accounts.FirstOrDefaultAsync(a => a.UserId == userId);
+
+        if (account == null)
+        {
+            throw new InvalidOperationException("Cuenta no encontrada.");
+        }
+
+        bool aliasEnUso = await _context.Accounts
+            .AnyAsync(a => a.Alias == newAlias && a.Id != account.Id);
+
+        if (aliasEnUso)
+        {
+            throw new ArgumentException("El alias ingresado ya se encuentra en uso por otra cuenta.");
+        }
+
+        account.Alias = newAlias;
+        await _context.SaveChangesAsync();
     }
 
     // Helper privado para formato de destino

@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext,useEffect } from "react";
 import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "./theme/theme";
 import {
@@ -13,6 +13,7 @@ import TransactionHistory from "./Components/Containers/TransactionHistory";
 import RootLayout from "./Components/Containers/RootLayout";
 import LandingPage from "./Components/Containers/LandingPage";
 import AuthContext from "./Contexts/AuthContext";
+import Profile from "./Components/Profile";
 
 
 const ProtectedRoute = () => {
@@ -47,6 +48,7 @@ const router = createBrowserRouter([
         children: [
           { path: "dashboard", element: <Dashboard /> },
           { path: "transactionHistory", element: <TransactionHistory /> },
+          { path: "profile", element: <Profile /> },
         ],
       },
     ],
@@ -64,12 +66,36 @@ function App() {
   const [userToken, setUserToken] = useState(() => {
     return localStorage.getItem("token") || null;
   });
+const [userData, setUserData] = useState(() => {
+    const saved = localStorage.getItem("userData");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  useEffect(() => {
+    if (userData) {
+      localStorage.setItem("userData", JSON.stringify(userData));
+    } else {
+      localStorage.removeItem("userData");
+    }
+  }, [userData]);
+
+  const logout = () => {
+    setUserId(null);
+    setUserToken(null);
+    setUserData(null);
+    localStorage.removeItem("userId");
+    localStorage.removeItem("token");
+    // El useEffect de arriba se encargará de remover "userData"
+  };
 
   const value = {
     userId,
     setUserId,
     userToken,
-    setUserToken
+    setUserToken,
+    userData,
+    setUserData,
+    logout
   };
   return (
     <AuthContext.Provider value={value}>
