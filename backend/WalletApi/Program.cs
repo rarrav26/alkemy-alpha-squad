@@ -49,12 +49,8 @@ builder.Services.AddControllers()
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-// Configure OpenAPI & Swagger UI
-builder.Services.AddOpenApi();
-// Configure OpenAPI & Swagger UI
+// Configure OpenAPI & Swagger UI (.NET 10)
 builder.Services.AddEndpointsApiExplorer();
-
-// Configuración correcta para el OpenAPI nativo de .NET (.NET 9+)
 builder.Services.AddOpenApi(options =>
 {
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();

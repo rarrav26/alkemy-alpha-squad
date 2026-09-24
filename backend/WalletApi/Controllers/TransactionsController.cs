@@ -28,8 +28,19 @@ public class TransactionsController : ControllerBase
         _logger = logger;
     }
 
-    /// Historial de movimientos del usuario autenticado (paginado y filtrado).
+    /// <summary>
+    /// Historial de movimientos del usuario autenticado (paginado y filtrado por fecha y tipo).
+    /// </summary>
+    /// <param name="fechaDesde">Fecha inicial de filtrado (opcional).</param>
+    /// <param name="fechaHasta">Fecha final de filtrado (opcional).</param>
+    /// <param name="tipo">Tipo de transacción: "all", "debit" (sent), o "credit" (received/deposit).</param>
+    /// <param name="pagina">Número de página (por defecto: 1).</param>
+    /// <param name="porPagina">Cantidad de elementos por página (por defecto: 10).</param>
+    /// <response code="200">Historial de transacciones obtenido correctamente.</response>
+    /// <response code="401">Usuario no autenticado o token inválido.</response>
     [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetMyTransactions(
         [FromQuery] DateTime? fechaDesde,
         [FromQuery] DateTime? fechaHasta,
@@ -101,9 +112,18 @@ public class TransactionsController : ControllerBase
     }
 
     /// <summary>
-    /// Consulta destinatario usando los Claims del usuario autenticado
+    /// Consulta y valida los datos de un destinatario por Alias o CVU antes de transferir.
     /// </summary>
+    /// <param name="destination">Alias (palabras separadas por puntos) o CVU (22 dígitos numéricos).</param>
+    /// <response code="200">Destinatario encontrado con éxito.</response>
+    /// <response code="400">Destino con formato inválido o pertenece a la propia cuenta.</response>
+    /// <response code="401">Usuario no autenticado.</response>
+    /// <response code="404">No existe ninguna cuenta asociada al Alias o CVU ingresado.</response>
     [HttpGet("lookup")]
+    [ProducesResponseType(typeof(RecipientLookupResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> LookupRecipient([FromQuery] string destination)
     {
         // ¡AQUÍ ESTÁN LOS CLAIMS! Extrae el ID del usuario del Token JWT
@@ -133,9 +153,18 @@ public class TransactionsController : ControllerBase
     }
 
     /// <summary>
-    /// Transfiere dinero validando el ModelState y el Claim de identidad
+    /// Realiza una transferencia atómica de fondos hacia otra cuenta por Alias o CVU.
     /// </summary>
+    /// <param name="request">Datos de la transferencia: destino (Alias o CVU) y monto.</param>
+    /// <response code="200">Transferencia realizada exitosamente con comprobante y nuevo saldo.</response>
+    /// <response code="400">Saldo insuficiente, monto inválido o destino propio.</response>
+    /// <response code="401">Usuario no autenticado.</response>
+    /// <response code="404">Cuenta de destino no encontrada.</response>
     [HttpPost("transfer")]
+    [ProducesResponseType(typeof(TransferResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Transfer([FromBody] TransferRequestDto request)
     {
         // Valida las DataAnnotations del DTO ([Required], etc.)
