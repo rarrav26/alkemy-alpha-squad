@@ -91,18 +91,24 @@ function Navbar() {
         zIndex: 10,
       }}
     >
-      <Toolbar sx={{ px: { xs: 2, sm: 4 } }}>
+      <Toolbar sx={{ justifyContent: "space-between",
+    px: { xs: 1, sm: 3 },
+    gap: { xs: 0.5, sm: 2 },}}>
         <AccountBalanceWallet
-          sx={{ mr: 1.5, fontSize: 28, color: "#38bdf8" }}
+          sx={{display: "block" ,
+    mr: { xs: 0.5, sm: 1.5 },
+    fontSize: 28,
+     color: "#38bdf8" }}
         />
         <Typography
           variant="h6"
           component="div"
           sx={{
-            flexGrow: 1,
             fontWeight: 700,
             letterSpacing: "-0.02em",
             color: "#f3f4f6",
+            fontSize: { xs: "0.85rem", sm: "1.1rem" }, 
+    flexGrow:  1 ,
           }}
         >
           DigitalArs
@@ -115,15 +121,15 @@ function Navbar() {
             sx={{
               borderRadius: 2,
               color: "#9ca3af",
-              "&:hover": {
-                color: "#f3f4f6",
-                bgcolor: "rgba(255,255,255,0.04)",
-              },
+              px: { xs: 1, sm: 2 },  
+      py: 0.5,
+      minWidth: "auto",    
+              "&:hover": { color: "#f3f4f6", bgcolor: "rgba(255,255,255,0.04)" },
             }}
           >
             <ListItemText
               primary="Inicio"
-              primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9rem" }}
+              primaryTypographyProps={{ fontWeight: 500, fontSize: { xs: "0.8rem", sm: "0.9rem" },}}
             />
           </ListItemButton>
         </Box>
@@ -134,15 +140,15 @@ function Navbar() {
             sx={{
               borderRadius: 2,
               color: "#9ca3af",
-              "&:hover": {
-                color: "#f3f4f6",
-                bgcolor: "rgba(255,255,255,0.04)",
-              },
+              px: { xs: 1, sm: 2 },  
+      py: 0.5,
+      minWidth: "auto",
+              "&:hover": { color: "#f3f4f6", bgcolor: "rgba(255,255,255,0.04)" },
             }}
           >
             <ListItemText
               primary="Historial"
-              primaryTypographyProps={{ fontWeight: 500, fontSize: "0.9rem" }}
+              primaryTypographyProps={{ fontWeight: 500, fontSize: { xs: "0.8rem", sm: "0.9rem" }, }}
             />
           </ListItemButton>
         </Box>
@@ -178,7 +184,8 @@ function Navbar() {
             sx={{
               textTransform: "none",
               borderRadius: "9999px",
-              padding: "4px 12px 4px 4px",
+              minWidth: "auto", 
+      padding: { xs: "2px 4px", sm: "4px 12px 4px 4px" },
               bgcolor: "rgba(255, 255, 255, 0.04)",
               border: "1px solid rgba(255, 255, 255, 0.06)",
               "&:hover": {
@@ -187,9 +194,11 @@ function Navbar() {
               },
             }}
           >
-            <Avatar sx={{ width: 36, height: 36, mr: 1.5, background:"linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%)" }}>
-              {userData.firstName?.charAt(0)}
-              {userData.lastName?.charAt(0)}
+            <Avatar sx={{ width: { xs: 28, sm: 36 }, 
+        height: { xs: 28, sm: 36 },
+        mr: { xs: 0.5, sm: 1.5 }, background:"linear-gradient(135deg, #38bdf8 0%, #1d4ed8 100%)" }}>
+              {userData?.firstName?.charAt(0)}
+              {userData?.lastName?.charAt(0)}
             </Avatar>
 
             <Typography
@@ -201,7 +210,7 @@ function Navbar() {
                 mr: 0.5,
               }}
             >
-              {userData.firstName} {userData.lastName}
+              {userData?.firstName} {userData?.lastName}
             </Typography>
             <ArrowDownIcon sx={{ fontSize: 18, color: "#9ca3af" }} />
           </Button>
