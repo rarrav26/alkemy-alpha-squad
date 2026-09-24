@@ -9,7 +9,7 @@ obj/
 *.ndf
 
 # Secretos y credenciales sensibles
-.env
 appsettings.json
 appsettings.Development.json
 
+config.bat

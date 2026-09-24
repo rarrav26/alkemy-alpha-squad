@@ -22,7 +22,7 @@ function LoginForm({ onToggleRegister }) {
   const [showPassword, setShowPassword] = useState(false);
   const [errorConfig, setErrorConfig] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
-  const { setUserId, setUserToken } = useContext(AuthContext);
+  const { setUserId, setUserToken, setUserData } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -43,13 +43,22 @@ function LoginForm({ onToggleRegister }) {
       if (data?.userId) {
         localStorage.setItem("userId", data.userId);
         localStorage.setItem("token", data.token);
+        setUserData({
+          firstName:data.firstName,
+          lastName:data.lastName
+        })
       }
       console.log("Login exitoso:", data.message);
       localStorage.setItem("token", data.token);
       setUserId(data.userId);
       setUserToken(data.token);
+       setUserData({
+          firstName:data.firstName,
+          lastName:data.lastName
+        })
 
-      navigate("/dashboard", { replace: true });
+
+      //navigate("/dashboard", { replace: true });
     } catch (error) {
       console.error("Detalle completo del error:", error);
 
