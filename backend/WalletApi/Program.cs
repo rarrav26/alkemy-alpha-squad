@@ -13,15 +13,41 @@ using WalletApi.Models;
 using WalletApi.Repositories;
 using WalletApi.Services;
 using WalletApi.Security;
+using WalletApi.Middlewares;
+using WalletApi.Exceptions;
+using Microsoft.AspNetCore.Mvc;
+
 var builder = WebApplication.CreateBuilder(args);
 
 System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
+// Add services to the container with unified validation error response
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var problemDetails = new ValidationProblemDetails(context.ModelState)
+            {
+                Type = "https://httpstatuses.io/400",
+                Title = "Error de validación",
+                Status = StatusCodes.Status400BadRequest,
+                Detail = "Uno o más campos contienen errores de validación.",
+                Instance = context.HttpContext.Request.Path
+            };
+            problemDetails.Extensions["errorCode"] = "VALIDATION_ERROR";
+            problemDetails.Extensions["timestamp"] = DateTime.UtcNow;
 
+            return new BadRequestObjectResult(problemDetails)
+            {
+                ContentTypes = { "application/problem+json" }
+            };
+        };
+    });
 
-
-// Add services to the container.
-builder.Services.AddControllers();
+// Unified Error Handling (IExceptionHandler & RFC 7807 ProblemDetails)
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
 // Configure OpenAPI & Swagger UI
 builder.Services.AddOpenApi();
@@ -186,6 +212,8 @@ using (var scope = app.Services.CreateScope())
     }
 }
 // Configure the HTTP request pipeline.
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();

@@ -3,6 +3,7 @@ using WalletApi.Data.Entities;
 using WalletApi.Dtos;
 using WalletApi.Models;
 using WalletApi.Interfaces;
+using WalletApi.Exceptions;
 
 namespace WalletApi.Services;
 
@@ -167,7 +168,7 @@ public class AccountService : IAccountService
 
         if (sourceAccount.Balance < request.Amount)
         {
-            throw new InvalidOperationException("Saldo insuficiente para realizar la transferencia.");
+            throw new InsufficientFundsException("Saldo insuficiente para realizar la transferencia.");
         }
 
         var trimmed = request.Destination?.Trim() ?? string.Empty;
@@ -211,7 +212,7 @@ public class AccountService : IAccountService
 
             if (debitoExitoso == 0)
             {
-                throw new InvalidOperationException("Saldo insuficiente o la cuenta fue modificada simultáneamente.");
+                throw new InsufficientFundsException("Saldo insuficiente o la cuenta fue modificada simultáneamente.");
             }
 
             // 2. Crédito atómico en Destino
