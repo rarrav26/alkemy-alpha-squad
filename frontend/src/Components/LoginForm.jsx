@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import {
   Typography,
   Box,
@@ -22,6 +22,19 @@ function LoginForm({ onToggleRegister, onToggleFirstLogin }) {
   const [errorConfig, setErrorConfig] = useState({ message: "", type: "" });
   const [loading, setLoading] = useState(false);
   const { setUserId, setUserToken, setUserData,setUserRole } = useContext(AuthContext);
+
+  useEffect(() => {
+    const savedNotice = sessionStorage.getItem("auth_notice");
+    if (savedNotice) {
+      sessionStorage.removeItem("auth_notice");
+      try {
+        const parsed = JSON.parse(savedNotice);
+        setErrorConfig({ message: parsed.message, type: parsed.type });
+      } catch {
+        setErrorConfig({ message: savedNotice, type: "DEACTIVATED" });
+      }
+    }
+  }, []);
 
 
   const handleSubmit = async (e) => {

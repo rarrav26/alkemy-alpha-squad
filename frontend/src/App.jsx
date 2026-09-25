@@ -65,6 +65,10 @@ const router = createBrowserRouter([
     path: "/auth",
     element: <PublicRoute />, // Si ya está logueado, lo saca de auth
   },
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
+  },
 ]);
 
 function App() {

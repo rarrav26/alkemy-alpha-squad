@@ -167,6 +167,25 @@ builder.Services.AddAuthentication(options =>
             {
                 Console.WriteLine($"Token inválido: {context.Exception.Message}");
                 return Task.CompletedTask;
+            },
+            OnChallenge = async context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.ContentType = "application/json";
+
+                var failureMessage = context.AuthenticateFailure?.Message;
+                var message = !string.IsNullOrEmpty(failureMessage)
+                    ? failureMessage
+                    : "No autorizado. Inicie sesión para continuar.";
+
+                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { message }));
+            },
+            OnForbidden = async context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                context.Response.ContentType = "application/json";
+                await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(new { message = "No tienes permisos de Administrador para realizar esta acción." }));
             }
         };
     });
