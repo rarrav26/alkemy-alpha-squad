@@ -54,13 +54,16 @@ ALTER TABLE Users
 
 USE WALLET;
 
+ALTER TABLE AspNetUsers DROP CONSTRAINT DF_AspNetUsers_DebeCambiarPassword;
+
+ALTER TABLE AspNetUsers DROP COLUMN DebeCambiarPassword;
+
 SELECT *
 FROM   AspNetUsers
 WHERE  Id = 1;
 
-UPDATE AspNetUsers
-SET    NormalizedEmail = 'ivokrivzov@gmail.com'
-WHERE  Id = 1;
+SELECT *
+FROM   VirtualCards;
 
 SELECT *
 FROM   AspNetUsers;

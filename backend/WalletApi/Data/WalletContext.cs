@@ -15,7 +15,7 @@ public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
     public virtual DbSet<DocumentType> DocumentTypes { get; set; } = null!;
     public virtual DbSet<Transaction> Transactions { get; set; } = null!;
     public virtual DbSet<Notification> Notifications { get; set; } = null!;
-
+    public DbSet<VirtualCard> VirtualCards { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -75,7 +75,7 @@ public class WalletContext : IdentityDbContext<User, IdentityRole<int>, int>
 
         modelBuilder.Entity<Transaction>(entity =>
         {
-                entity.ToTable("Transactions");
+            entity.ToTable("Transactions");
             entity.HasKey(e => e.Id);
             // Relación con la Cuenta Titular (dueña del movimiento)
             entity.HasOne(t => t.Account)
