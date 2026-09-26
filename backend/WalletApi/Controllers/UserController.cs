@@ -13,12 +13,12 @@ namespace WalletApi.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
 
-        public UserController(IUserRepository userRepository, UserManager<User> userManager)
+        public UserController(IUserService userService, UserManager<User> userManager)
         {
-            _userRepository = userRepository;
+            _userService = userService;
             _userManager = userManager;
         }
         [HttpGet]
@@ -29,7 +29,7 @@ namespace WalletApi.Controllers
             if (pagina < 1) pagina = 1;
             if (porPagina < 1 || porPagina > 100) porPagina = 10;
 
-            var resultado = await _userRepository.ObtenerUsuariosPaginadosAsync(pagina, porPagina);
+            var resultado = await _userService.ObtenerUsuariosPaginadosAsync(pagina, porPagina);
             return Ok(resultado);
         }
 
@@ -45,7 +45,7 @@ namespace WalletApi.Controllers
                 return BadRequest(new { message = "El identificador de usuario debe ser mayor a cero." });
             }
 
-            var userDetail = await _userRepository.ObtenerDetallePorIdAsync(id);
+            var userDetail = await _userService.ObtenerDetallePorIdAsync(id);
 
 
             if (userDetail == null)
@@ -69,7 +69,7 @@ namespace WalletApi.Controllers
 
             try
             {
-                var usuarioCreado = await _userRepository.CrearUsuarioPorAdminAsync(request);
+                var usuarioCreado = await _userService.CrearUsuarioPorAdminAsync(request);
 
                 return CreatedAtAction(
                     nameof(ObtenerPorId),
@@ -110,7 +110,7 @@ namespace WalletApi.Controllers
 
             try
             {
-                var usuarioActualizado = await _userRepository.ActualizarUsuarioPorAdminAsync(id, request);
+                var usuarioActualizado = await _userService.ActualizarUsuarioPorAdminAsync(id, request);
                 return Ok(usuarioActualizado);
             }
             catch (KeyNotFoundException ex)
@@ -148,7 +148,7 @@ namespace WalletApi.Controllers
 
             try
             {
-                var usuarioActualizado = await _userRepository.CambiarEstadoUsuarioPorAdminAsync(id, request.IsActive);
+                var usuarioActualizado = await _userService.CambiarEstadoUsuarioPorAdminAsync(id, request.IsActive);
                 return Ok(usuarioActualizado);
             }
             catch (KeyNotFoundException ex)
@@ -171,12 +171,12 @@ namespace WalletApi.Controllers
             if (id <= 0)
                 return BadRequest();
 
-            var userSearched = _userRepository.ObtenerPorId(id);
+            var userSearched = _userService.ObtenerPorId(id);
 
             if (userSearched == null)
                 return BadRequest();
 
-            var userEliminadoCorrectamente = _userRepository.Eliminar(userSearched);
+            var userEliminadoCorrectamente = _userService.Eliminar(userSearched);
             if (!userEliminadoCorrectamente)
                 return NotFound();
 

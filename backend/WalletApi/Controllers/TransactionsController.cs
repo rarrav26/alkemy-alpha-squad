@@ -6,6 +6,7 @@ using WalletApi.Dtos;
 using WalletApi.Models;
 using WalletApi.Services;
 using WalletApi.Interfaces;
+using WalletApi.Data.Entities;
 
 namespace WalletApi.Controllers;
 
@@ -75,11 +76,11 @@ public class TransactionsController : ControllerBase
             var tipoLower = tipo.ToLower();
             if (tipoLower == "sent" || tipoLower == "debito" || tipoLower == "debit")
             {
-                query = query.Where(t => t.Type == "debit");
+                query = query.Where(t => t.Type == TransactionType.Debit);
             }
             else if (tipoLower == "received" || tipoLower == "recived" || tipoLower == "credito" || tipoLower == "credit")
             {
-                query = query.Where(t => t.Type == "credit" || t.Type == "deposit");
+                query = query.Where(t => t.Type == TransactionType.Credit || t.Type == TransactionType.Deposit);
             }
         }
 
@@ -95,7 +96,7 @@ public class TransactionsController : ControllerBase
                 t.AccountId,
                 t.Amount,
                 Date = t.CreatedAt,
-                Tipo = (t.Type == "credit" || t.Type == "deposit") ? "Crédito" : "Débito",
+                Tipo = (t.Type == TransactionType.Credit || t.Type == TransactionType.Deposit) ? "Crédito" : "Débito",
                 t.Description,
                 t.CounterpartAccountId
             })
