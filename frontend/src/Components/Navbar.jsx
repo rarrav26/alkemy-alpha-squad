@@ -15,7 +15,6 @@ import {
 } from "@mui/material";
 import {
   Person as PersonIcon,
-  Settings as SettingsIcon,
   Dashboard as DashboardIcon,
   Logout as LogoutIcon,
   KeyboardArrowDown as ArrowDownIcon,
@@ -77,7 +76,6 @@ function Navbar() {
       console.error("Error de red:", error);
     }
   }
-
 
   return (
     <AppBar
@@ -171,7 +169,7 @@ function Navbar() {
           </Box>
         )}
 
-        {/* Botón de Notificaciones con Badge (9+) */}
+
         <Box sx={{ mr: 1.5, ml: 1 }}>
           <NotificationsPopover />
         </Box>
@@ -251,13 +249,7 @@ function Navbar() {
                 variant="subtitle2"
                 sx={{ fontWeight: 700, color: "#f3f4f6" }}
               >
-                Alex Morgan
-              </Typography>
-              <Typography
-                variant="body2"
-                sx={{ color: "#9ca3af", fontSize: "0.75rem" }}
-              >
-                alex.morgan@example.com
+                {userData?.firstName} {userData?.lastName}
               </Typography>
             </Box>
             <Divider sx={{ borderColor: "rgba(255,255,255,0.06)" }} />

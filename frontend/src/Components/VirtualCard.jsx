@@ -31,7 +31,6 @@ export default function VirtualCard() {
     try {
       const data = await virtualCardService.getMyCard();
       setCard(data);
-      console.log(data);
     } catch (error) {
       if (error.response?.status !== 404) {
         console.error("Error obteniendo tarjeta", error);
