@@ -10,14 +10,25 @@ using WalletApi.Data;
 using WalletApi.Data.Entities;
 using WalletApi.Interfaces;
 using WalletApi.Models;
-using WalletApi.Repositories;
 using WalletApi.Services;
 using WalletApi.Security;
 using WalletApi.Middlewares;
 using WalletApi.Exceptions;
+using WalletApi.Options;
 using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuración fuertemente tipada con Options Pattern y validación en arranque
+builder.Services.AddOptions<JwtOptions>()
+    .BindConfiguration(JwtOptions.SectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddOptions<AdminUserOptions>()
+    .BindConfiguration(AdminUserOptions.SectionName)
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -75,9 +86,8 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 
 builder.Services.AddScoped<ICardService, CardService>();
 
-// Dependency Injection for application services & repositories
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+// Inyección de dependencias para servicios de aplicación
+builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAliasGeneratorService, AliasGeneratorService>();
 builder.Services.AddScoped<ICvuGeneratorService, CvuGeneratorService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -101,31 +111,29 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
-var jwtKey = builder.Configuration["Jwt:Key"]
-    ?? throw new InvalidOperationException("No se configuró Jwt:Key.");
-
+var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
+    ?? throw new InvalidOperationException("No se configuró la sección Jwt en appsettings.json.");
 
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
 })
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidIssuer = jwtOptions.Issuer,
 
             ValidateAudience = true,
-            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidAudience = jwtOptions.Audience,
 
             ValidateLifetime = true,
 
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtKey)),
+                Encoding.UTF8.GetBytes(jwtOptions.Key)),
 
             ClockSkew = TimeSpan.Zero,
 
