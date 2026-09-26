@@ -441,14 +441,14 @@ public class TransferServiceTests : IDisposable
         debitTx.Should().NotBeNull();
         debitTx!.AccountId.Should().Be(1);
         debitTx.CounterpartAccountId.Should().Be(2);
-        debitTx.Type.Should().Be("debit");
+        debitTx.Type.Should().Be(TransactionType.Debit);
         debitTx.Amount.Should().Be(300.00m);
         debitTx.RelatedTransactionId.Should().Be(creditTx!.Id);
 
         creditTx.Should().NotBeNull();
         creditTx.AccountId.Should().Be(2);
         creditTx.CounterpartAccountId.Should().Be(1);
-        creditTx.Type.Should().Be("credit");
+        creditTx.Type.Should().Be(TransactionType.Credit);
         creditTx.Amount.Should().Be(300.00m);
         creditTx.RelatedTransactionId.Should().Be(debitTx.Id);
 
