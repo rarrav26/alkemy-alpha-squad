@@ -1,3 +1,5 @@
+namespace WalletApi.Dtos;
+
 public class VirtualCard
 {
     public int Id { get; set; }

@@ -4,6 +4,7 @@ using WalletApi.Data.Entities;
 using WalletApi.Dtos;
 using WalletApi.Interfaces;
 using WalletApi.Models;
+using VirtualCardEntity = WalletApi.Data.Entities.VirtualCard;
 
 namespace WalletApi.Services;
 
@@ -38,7 +39,7 @@ public class CardService(WalletContext context) : ICardService
 
         var cvv = RandomNumberGenerator.GetInt32(100, 1000).ToString();
 
-        var newCard = new VirtualCard
+        var newCard = new VirtualCardEntity
         {
             UserId = userId,
             CardNumber = cardNumber,
@@ -75,7 +76,7 @@ public class CardService(WalletContext context) : ICardService
         };
     }
 
-    private static VirtualCardResponseDto MapToDto(VirtualCard card) => new()
+    private static VirtualCardResponseDto MapToDto(VirtualCardEntity card) => new()
     {
         Id = card.Id,
         UserId = card.UserId,

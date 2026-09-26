@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -11,30 +11,25 @@ namespace WalletApi.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Notifications",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    Title = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Message = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    IsRead = table.Column<bool>(type: "bit", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    ReferenceId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Notifications", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Notifications_Users",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
+            migrationBuilder.Sql(@"
+                IF OBJECT_ID(N'[Notifications]', N'U') IS NULL
+                BEGIN
+                    CREATE TABLE [Notifications] (
+                        [Id] int NOT NULL IDENTITY,
+                        [UserId] int NOT NULL,
+                        [Title] nvarchar(100) NOT NULL,
+                        [Message] nvarchar(500) NOT NULL,
+                        [Type] nvarchar(50) NOT NULL,
+                        [IsRead] bit NOT NULL,
+                        [CreatedAt] datetime2 NOT NULL DEFAULT (GETUTCDATE()),
+                        [ReferenceId] int NULL,
+                        CONSTRAINT [PK_Notifications] PRIMARY KEY ([Id]),
+                        CONSTRAINT [FK_Notifications_Users] FOREIGN KEY ([UserId]) REFERENCES [AspNetUsers] ([Id]) ON DELETE CASCADE
+                    );
+                    CREATE INDEX [IX_Notifications_CreatedAt] ON [Notifications] ([CreatedAt]);
+                    CREATE INDEX [IX_Notifications_UserId_IsRead] ON [Notifications] ([UserId], [IsRead]);
+                END
+            ");
 
             migrationBuilder.CreateTable(
                 name: "VirtualCards",
@@ -53,16 +48,6 @@ namespace WalletApi.Migrations
                 {
                     table.PrimaryKey("PK_VirtualCards", x => x.Id);
                 });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_CreatedAt",
-                table: "Notifications",
-                column: "CreatedAt");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Notifications_UserId_IsRead",
-                table: "Notifications",
-                columns: new[] { "UserId", "IsRead" });
         }
 
         /// <inheritdoc />

@@ -56,13 +56,25 @@ public class AccountService : IAccountService
         await using var transaction = await _context.Database.BeginTransactionAsync();
         try
         {
-            account.Balance += request.Amount;
+            // 1. Incremento atómico directo en SQL Server (Previene condiciones de carrera)
+            var filasAfectadas = await _context.Accounts
+                .Where(a => a.Id == account.Id)
+                .ExecuteUpdateAsync(setter => setter.SetProperty(
+                    a => a.Balance,
+                    a => a.Balance + request.Amount
+                ));
+
+            if (filasAfectadas == 0)
+            {
+                throw new InvalidOperationException("No se pudo actualizar el saldo. La cuenta pudo haber sido eliminada o modificada simultáneamente.");
+            }
 
             var tx = new Transaction
             {
                 AccountId = account.Id,
                 Amount = request.Amount,
-                Type = "credit", // Criterio: Genera un movimiento de crédito registrado con fecha
+                CounterpartAccountId = null,
+                Type = TransactionType.Deposit, // Criterio: Genera un movimiento de depósito registrado con fecha
                 Description = "Depósito de dinero",
                 CreatedAt = DateTime.UtcNow
             };
@@ -86,11 +98,13 @@ public class AccountService : IAccountService
                 // No interrumpir la respuesta si falla la notificación
             }
 
+            var newBalance = account.Balance + request.Amount;
+
             return new DepositResponseDto
             {
                 TransactionId = tx.Id,
                 Amount = request.Amount,
-                NewBalance = account.Balance,
+                NewBalance = newBalance,
                 Date = tx.CreatedAt,
                 Message = "Depósito realizado con éxito."
             };
@@ -257,7 +271,7 @@ public class AccountService : IAccountService
                 AccountId = sourceAccount.Id,
                 CounterpartAccountId = targetAccount.Id,
                 Amount = request.Amount,
-                Type = "debit",
+                Type = TransactionType.Debit,
                 Description = $"Transferencia enviada a {destFullName}",
                 CreatedAt = now
             };
@@ -269,7 +283,7 @@ public class AccountService : IAccountService
                 AccountId = targetAccount.Id,
                 CounterpartAccountId = sourceAccount.Id,
                 Amount = request.Amount,
-                Type = "credit",
+                Type = TransactionType.Credit,
                 Description = $"Transferencia recibida de {sourceFullName}",
                 CreatedAt = now,
                 RelatedTransactionId = debitTx.Id
@@ -349,7 +363,7 @@ public class AccountService : IAccountService
                 Id = t.Id,
                 AccountId = t.AccountId,
                 Amount = t.Amount,
-                Type = t.Type,
+                Type = t.Type.ToString(),
                 Description = t.Description,
                 Date = t.CreatedAt,
                 CounterpartAccountId = t.CounterpartAccountId,

@@ -13,13 +13,12 @@ namespace WalletApi.Controllers
     [ApiController]
     public class ProfileController : ControllerBase
     {
-
-        private readonly IUserRepository _userRepository;
+        private readonly IUserService _userService;
         private readonly UserManager<User> _userManager;
 
-        public ProfileController(IUserRepository userRepository, UserManager<User> userManager)
+        public ProfileController(IUserService userService, UserManager<User> userManager)
         {
-            _userRepository = userRepository;
+            _userService = userService;
             _userManager = userManager;
         }
 
@@ -27,24 +26,21 @@ namespace WalletApi.Controllers
         [ProducesResponseType(typeof(UserDetailResponseDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-
         public async Task<ActionResult<UserDetailResponseDto>> ObtenerUsuarioAutenticado()
         {
-
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
 
             if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
             {
-                return Unauthorized(new { message = "Token inválido o no autorizado" });
+                return Unauthorized(new { message = "Token inválido o no autorizado." });
             }
 
-            var userDetail = await _userRepository.ObtenerDetallePorIdAsync(userId);
+            var userDetail = await _userService.ObtenerDetallePorIdAsync(userId);
 
             if (userDetail == null)
             {
-                return NotFound(new { message = "Usuario no encontrado" });
+                return NotFound(new { message = "Usuario no encontrado." });
             }
-
 
             return Ok(userDetail);
         }
@@ -57,13 +53,13 @@ namespace WalletApi.Controllers
 
             if (userIdClaim == null || !int.TryParse(userIdClaim, out int userId))
             {
-                return BadRequest(new { message = "Este mail ya esta en uso, probá de nuevo." });
+                return Unauthorized(new { message = "Token inválido o no autorizado." });
             }
 
-            var user = _userRepository.ObtenerPorId(userId);
+            var user = _userService.ObtenerPorId(userId);
             if (user == null)
             {
-                return NotFound(new { message = "Usuario no encontrado" });
+                return NotFound(new { message = "Usuario no encontrado." });
             }
 
             bool emailChanged = !string.Equals(user.Email, request.Email, StringComparison.OrdinalIgnoreCase);
@@ -72,7 +68,7 @@ namespace WalletApi.Controllers
             {
                 if (string.IsNullOrEmpty(request.ContrasenaActual))
                 {
-                    return Unauthorized(new { message = "Contraseña actual incorrecta requerida para cambiar el email." });
+                    return Unauthorized(new { message = "Contraseña actual requerida para cambiar el email." });
                 }
 
                 bool isPasswordValid = await _userManager.CheckPasswordAsync(user, request.ContrasenaActual);
@@ -81,22 +77,24 @@ namespace WalletApi.Controllers
                     return BadRequest(new { message = "Contraseña actual incorrecta requerida para cambiar el email." });
                 }
 
-
-                var emailExists = _userRepository.ObtenerPorEmail(request.Email);
+                var emailExists = _userService.ObtenerPorEmail(request.Email);
                 if (emailExists != null && emailExists.Id != user.Id)
                 {
-                    return BadRequest(new { message = "El email ya esta en uso" });
+                    return BadRequest(new { message = "El email ya está en uso." });
                 }
 
                 user.Email = request.Email;
             }
 
-
             user.FirstName = request.FirstName;
             user.LastName = request.LastName;
 
-            // Guardar cambios en el repositorio
-            _userRepository.Actualizar(user);
+            // Guardar cambios de forma asíncrona en el servicio
+            var actualizado = await _userService.ActualizarAsync(user);
+            if (!actualizado)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "Error al actualizar el perfil en la base de datos." });
+            }
 
             return Ok(new { message = "Perfil actualizado correctamente." });
         }
