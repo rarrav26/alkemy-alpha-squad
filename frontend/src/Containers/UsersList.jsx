@@ -33,10 +33,10 @@ import {
   BlockOutlined as BlockIcon,
   CheckCircleOutlined as CheckCircleOutlinedIcon,
 } from "@mui/icons-material";
-import userService from "../../services/userService";
-import UserDetailModal from "../UserDetailModal";
-import CreateUserModal from "../CreateUserModal";
-import EditUserModal from "../EditUserModal";
+import userService from "../services/userService";
+import UserDetailModal from "../Components/UserDetailModal";
+import CreateUserModal from "../Components/CreateUserModal";
+import EditUserModal from "../Components/EditUserModal";
 
 function UsersList() {
   const [usuarios, setUsuarios] = useState([]);

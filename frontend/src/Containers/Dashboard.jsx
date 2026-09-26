@@ -22,11 +22,11 @@ import {
   ContentCopy,
   Check,
 } from "@mui/icons-material";
-import DepositForm from "../DepositForm";
-import TransferForm from "./TransferForm";
-import accountService from "../../services/accountService";
+import DepositForm from "../Components/DepositForm";
+import TransferForm from "../Components/TransferForm";
+import accountService from "../services/accountService";
 import TransactionHistory from "./TransactionHistory";
-import VirtualCard from "../VirtualCard";
+import VirtualCard from "../Components/VirtualCard";
 
 function Dashboard() {
   const [account, setAccount] = useState(null);

@@ -7,15 +7,15 @@ import {
   Navigate,
   Outlet
 } from "react-router-dom";
-import AuthComponent from "./Components/Containers/Auth";
-import Dashboard from "./Components/Containers/Dashboard";
-import TransactionHistory from "./Components/Containers/TransactionHistory";
-import UsersList from "./Components/Containers/UsersList";
-import RootLayout from "./Components/Containers/RootLayout";
-import LandingPage from "./Components/Containers/LandingPage";
+import AuthComponent from "./Containers/Auth";
+import Dashboard from "./Containers/Dashboard";
+import TransactionHistory from "./Containers/TransactionHistory";
+import UsersList from "./Containers/UsersList";
+import RootLayout from "./Containers/RootLayout";
+import LandingPage from "./Containers/LandingPage";
 import AdminRoute from "./Components/AdminRoute";
 import AuthContext from "./Contexts/AuthContext";
-import Profile from "./Components/Profile";
+import Profile from "./Containers/Profile";
 
 
 const ProtectedRoute = () => {

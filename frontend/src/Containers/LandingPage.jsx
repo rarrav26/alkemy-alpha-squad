@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import AuraBackground from "../AuraBackground";
+import AuraBackground from "../Components/AuraBackground";
 import {
   AccountBalanceWallet,
   ArrowForward,

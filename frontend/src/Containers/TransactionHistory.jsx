@@ -1,7 +1,7 @@
-import { Box, Card, Typography, Button, CircularProgress } from "@mui/material";
+import { Box, Typography, Button, CircularProgress } from "@mui/material";
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import TransactionFiltersBar from "../TransactionFiltersBar";
+import TransactionFiltersBar from "../Components/TransactionFiltersBar";
 
 function TransactionHistory({
   limit = null,

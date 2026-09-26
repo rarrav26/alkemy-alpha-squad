@@ -10,7 +10,7 @@ import {
   Paper,
 } from "@mui/material";
 import { Send, CheckCircle, Person } from "@mui/icons-material";
-import accountService from "../../services/accountService";
+import accountService from "../services/accountService";
 
 function TransferForm({ onTransferSuccess, availableBalance }) {
   const [destination, setDestination] = useState("");

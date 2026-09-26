@@ -28,8 +28,8 @@ import {
 } from "@mui/icons-material";
 
 import accountService from "../services/accountService";
-import AccountDataCard from "./AccountDataCard";
-import DetailCard from "./DetailCard";
+import AccountDataCard from "../Components/AccountDataCard";
+import DetailCard from "../Components/DetailCard";
 import AuthContext from "../Contexts/AuthContext";
 
 function Profile() {

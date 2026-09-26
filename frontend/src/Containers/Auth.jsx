@@ -1,7 +1,7 @@
 import { useState } from "react";
-import RegisterForm from "../RegisterForm";
-import LoginForm from "../LoginForm";
-import FirstLoginForm from "../FirstLoginForm";
+import RegisterForm from "../Components/RegisterForm";
+import LoginForm from "../Components/LoginForm";
+import FirstLoginForm from "../Components/FirstLoginForm";
 import {
   Container,
   Typography,
@@ -10,17 +10,11 @@ import {
   Tab,
 } from "@mui/material";
 import { LoginOutlined, PersonAddOutlined } from "@mui/icons-material";
-import AuraBackground from "../AuraBackground";
+import AuraBackground from "../Components/AuraBackground";
 
 function AuthComponent() {
   const [currentUser, setCurrentUser] = useState(null);
   const [authTab, setAuthTab] = useState("login");
-
-  const handleLogout = () => {
-    localStorage.removeItem("userId");
-    setCurrentUser(null);
-    setAuthTab("login");
-  };
 
   return (
     <>

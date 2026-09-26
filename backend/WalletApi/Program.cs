@@ -73,6 +73,7 @@ builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 .AddEntityFrameworkStores<WalletContext>()
 .AddDefaultTokenProviders();
 
+builder.Services.AddScoped<ICardService, CardService>();
 
 // Dependency Injection for application services & repositories
 builder.Services.AddScoped<IUserRepository, UserRepository>();

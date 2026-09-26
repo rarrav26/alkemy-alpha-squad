@@ -34,6 +34,8 @@ public class UserDetailResponseDto
     public string DocumentType { get; set; } = string.Empty;
     public string DocumentNumber { get; set; } = string.Empty;
     public bool IsActive { get; set; }
+    public string Estado => IsActive ? "Activo" : "Inactivo";
+
     public DateTime CreatedAt { get; set; }
     public string Role { get; set; } = "Usuario";
     public AccountResponseDto? Account { get; set; }

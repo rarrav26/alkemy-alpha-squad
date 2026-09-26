@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using WalletApi.Interfaces;
 using WalletApi.Data.Entities;
+using WalletApi.Dtos;
 
 namespace WalletApi.Controllers
 {
@@ -23,8 +24,11 @@ namespace WalletApi.Controllers
         }
 
         [HttpGet("me")]
-        [Authorize]
-        public ActionResult ObtenerUsuarioAutenticado()
+        [ProducesResponseType(typeof(UserDetailResponseDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        public async Task<ActionResult<UserDetailResponseDto>> ObtenerUsuarioAutenticado()
         {
 
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
@@ -34,15 +38,15 @@ namespace WalletApi.Controllers
                 return Unauthorized(new { message = "Token inválido o no autorizado" });
             }
 
-            var user = _userRepository.ObtenerPorId(userId);
+            var userDetail = await _userRepository.ObtenerDetallePorIdAsync(userId);
 
-            if (user == null)
+            if (userDetail == null)
             {
                 return NotFound(new { message = "Usuario no encontrado" });
             }
 
 
-            return Ok(user);
+            return Ok(userDetail);
         }
 
         [HttpPut("me")]
